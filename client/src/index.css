@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 3.7%, 15.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+  
+  /* Nutrient brand colors */
+  --nutrient-primary: hsl(207, 90%, 54%);
+  --nutrient-secondary: hsl(142, 76%, 36%);
+  --nutrient-warning: hsl(38, 92%, 50%);
+  --nutrient-error: hsl(0, 84%, 60%);
+  --nutrient-dark: hsl(222, 84%, 5%);
+  --nutrient-card: hsl(215, 28%, 17%);
+  --nutrient-text: hsl(210, 40%, 98%);
+  --nutrient-text-secondary: hsl(215, 20%, 65%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    background: var(--nutrient-dark);
+    color: var(--nutrient-text);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .drag-over {
+    border-color: var(--nutrient-primary) !important;
+    background-color: hsla(207, 90%, 54%, 0.1) !important;
+  }
+  
+  .processing-shimmer {
+    background: linear-gradient(90deg, var(--nutrient-card) 25%, hsl(215, 25%, 22%) 50%, var(--nutrient-card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+}
+
+@layer utilities {
+  .text-nutrient-primary {
+    color: var(--nutrient-primary);
+  }
+  
+  .text-nutrient-secondary {
+    color: var(--nutrient-secondary);
+  }
+  
+  .text-nutrient-warning {
+    color: var(--nutrient-warning);
+  }
+  
+  .text-nutrient-error {
+    color: var(--nutrient-error);
+  }
+  
+  .text-nutrient-text {
+    color: var(--nutrient-text);
+  }
+  
+  .text-nutrient-text-secondary {
+    color: var(--nutrient-text-secondary);
+  }
+  
+  .bg-nutrient-primary {
+    background-color: var(--nutrient-primary);
+  }
+  
+  .bg-nutrient-secondary {
+    background-color: var(--nutrient-secondary);
+  }
+  
+  .bg-nutrient-warning {
+    background-color: var(--nutrient-warning);
+  }
+  
+  .bg-nutrient-error {
+    background-color: var(--nutrient-error);
+  }
+  
+  .bg-nutrient-dark {
+    background-color: var(--nutrient-dark);
+  }
+  
+  .bg-nutrient-card {
+    background-color: var(--nutrient-card);
+  }
+  
+  .border-nutrient-primary {
+    border-color: var(--nutrient-primary);
+  }
+  
+  .border-nutrient-secondary {
+    border-color: var(--nutrient-secondary);
+  }
+  
+  .border-nutrient-warning {
+    border-color: var(--nutrient-warning);
+  }
+  
+  .border-nutrient-error {
+    border-color: var(--nutrient-error);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
