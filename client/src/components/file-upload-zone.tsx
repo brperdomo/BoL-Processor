@@ -81,7 +81,6 @@ export default function FileUploadZone() {
         {!uploadMutation.isPending && (
           <Button 
             className="bg-nutrient-primary hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200"
-            onClick={(e) => e.stopPropagation()}
           >
             Select Files
           </Button>
