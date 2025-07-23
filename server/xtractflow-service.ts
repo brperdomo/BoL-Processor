@@ -215,7 +215,13 @@ export class XTractFlowService {
 
   // Mock processing for development and fallback
   private mockProcessDocument(filename: string, mimeType: string): ProcessingResult {
-    const random = Math.random();
+    // Create deterministic randomness based on filename to ensure consistent results per file
+    const fileHash = this.hashString(filename);
+    const random = (fileHash % 1000) / 1000; // Convert to 0-1 range
+    
+    // Extract meaningful parts from filename for realistic data generation
+    const filenameBase = filename.replace(/^\d+_/, '').replace(/\.[^.]+$/, '');
+    const bolNumber = this.generateBOLNumber(filenameBase, fileHash);
     
     // Simulate different processing outcomes based on filename patterns
     if (filename.toLowerCase().includes('invoice') || filename.toLowerCase().includes('not_bol')) {
@@ -244,53 +250,69 @@ export class XTractFlowService {
       };
     }
 
+    // Generate varied mock data based on file characteristics
+    const carriers = [
+      { name: 'FedEx Freight', scac: 'FXFE' },
+      { name: 'UPS Freight', scac: 'UPGF' },
+      { name: 'XPO Logistics', scac: 'XPOL' },
+      { name: 'Old Dominion', scac: 'ODFL' },
+      { name: 'YRC Freight', scac: 'YRCW' }
+    ];
+
+    const shippers = [
+      { name: 'Global Manufacturing Corp', address: '123 Industrial Blvd, Chicago, IL 60601' },
+      { name: 'Acme Production Inc', address: '456 Factory Row, Detroit, MI 48201' },
+      { name: 'Prime Industries LLC', address: '789 Commerce Ave, Atlanta, GA 30309' },
+      { name: 'Summit Manufacturing', address: '321 Production Dr, Houston, TX 77002' },
+      { name: 'Apex Industrial Group', address: '654 Warehouse St, Phoenix, AZ 85001' }
+    ];
+
+    const consignees = [
+      { name: 'Regional Distribution Center', address: '987 Logistics Way, Dallas, TX 75201' },
+      { name: 'Metro Warehouse Solutions', address: '147 Shipping Ln, Miami, FL 33101' },
+      { name: 'National Supply Chain Hub', address: '258 Freight Blvd, Denver, CO 80202' },
+      { name: 'Pacific Distribution Network', address: '369 Harbor Dr, Los Angeles, CA 90210' },
+      { name: 'Eastern Logistics Terminal', address: '741 Cargo St, Newark, NJ 07102' }
+    ];
+
+    const selectedCarrier = carriers[fileHash % carriers.length];
+    const selectedShipper = shippers[(fileHash * 2) % shippers.length];
+    const selectedConsignee = consignees[(fileHash * 3) % consignees.length];
+
     if (filename.toLowerCase().includes('scan') || random < 0.3) {
       // Needs validation
       return {
         status: 'needs_validation',
-        confidence: 0.67,
+        confidence: 0.67 + (random * 0.15), // 67-82% confidence
         extractedData: {
-          bolNumber: `XYZ${Math.floor(Math.random() * 100000000)}`,
-          carrier: {
-            name: 'XYZ Freight Services',
-            scac: 'XYZF'
-          },
-          shipper: {
-            name: 'Manufacturing Corp',
-            address: '123 Industrial Blvd, Chicago, IL 60601'
-          },
+          bolNumber: bolNumber,
+          carrier: selectedCarrier,
+          shipper: selectedShipper,
           consignee: {
-            name: 'Regional Distrib. Warehouse',
-            address: '789 Commerce St\nMiami FL 33101-'
+            name: selectedConsignee.name,
+            address: selectedConsignee.address.replace(/,/g, '\n') // Simulate formatting issues
           },
-          shipDate: '2024-12-01',
-          totalWeight: 2105,
-          items: [
-            {
-              description: 'Industrial Equipment',
-              quantity: '15 pcs',
-              weight: 1200,
-              class: 'Class 85'
-            }
-          ],
-          confidence: 0.67,
+          shipDate: this.generateShipDate(fileHash),
+          totalWeight: 1800 + (fileHash % 800), // 1800-2600 lbs
+          items: this.generateItems(fileHash, 'validation'),
+          confidence: 0.67 + (random * 0.15),
           processingTimestamp: new Date().toISOString()
         },
         validationIssues: [
           {
             field: 'bolNumber',
-            message: 'BOL number field partially obscured - manual verification required',
+            message: `BOL number confidence: ${Math.round((0.65 + random * 0.2) * 100)}% - verification recommended`,
             severity: 'warning'
           },
           {
             field: 'consignee.address',
-            message: 'Consignee address format doesn\'t match standard patterns',
+            message: 'Address format inconsistent with standard patterns',
             severity: 'warning'
           },
           {
             field: 'totalWeight',
-            message: 'Total weight calculation mismatch (2,105 lbs vs 2,350 lbs)',
-            severity: 'error'
+            message: `Weight calculation variance detected`,
+            severity: random > 0.5 ? 'error' : 'warning'
           }
         ]
       };
@@ -299,47 +321,72 @@ export class XTractFlowService {
     // Successfully processed
     return {
       status: 'processed',
-      confidence: 0.96,
+      confidence: 0.91 + (random * 0.08), // 91-99% confidence
       extractedData: {
-        bolNumber: `ABC${Math.floor(Math.random() * 1000000000)}`,
-        carrier: {
-          name: 'ABC Logistics Inc.',
-          scac: 'ABCL'
-        },
-        shipper: {
-          name: 'Acme Manufacturing',
-          address: '123 Industrial Blvd, Chicago, IL 60601'
-        },
-        consignee: {
-          name: 'Global Distribution Center',
-          address: '456 Warehouse Dr, Dallas, TX 75201'
-        },
-        shipDate: '2024-12-01',
-        totalWeight: 2450,
-        items: [
-          {
-            description: 'Industrial Pumps',
-            quantity: 12,
-            weight: 1200,
-            class: 'Class 85'
-          },
-          {
-            description: 'Pipe Fittings',
-            quantity: '48 boxes',
-            weight: 850,
-            class: 'Class 55'
-          },
-          {
-            description: 'Gaskets & Seals',
-            quantity: '6 pallets',
-            weight: 400,
-            class: 'Class 60'
-          }
-        ],
-        confidence: 0.96,
+        bolNumber: bolNumber,
+        carrier: selectedCarrier,
+        shipper: selectedShipper,
+        consignee: selectedConsignee,
+        shipDate: this.generateShipDate(fileHash),
+        totalWeight: 2200 + (fileHash % 600), // 2200-2800 lbs
+        items: this.generateItems(fileHash, 'processed'),
+        confidence: 0.91 + (random * 0.08),
         processingTimestamp: new Date().toISOString()
       }
     };
+  }
+
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  private generateBOLNumber(filenameBase: string, hash: number): string {
+    const prefixes = ['BOL', 'BL', 'WB', 'REF'];
+    const prefix = prefixes[hash % prefixes.length];
+    const number = (hash % 900000000) + 100000000; // 9-digit number
+    return `${prefix}${number}`;
+  }
+
+  private generateShipDate(hash: number): string {
+    const days = hash % 30; // Last 30 days
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date.toISOString().split('T')[0];
+  }
+
+  private generateItems(hash: number, status: string): BOLData['items'] {
+    const itemTemplates = [
+      { description: 'Industrial Machinery Parts', baseWeight: 1200, class: 'Class 85' },
+      { description: 'Steel Pipe Fittings', baseWeight: 850, class: 'Class 55' },
+      { description: 'Electronic Components', baseWeight: 300, class: 'Class 92.5' },
+      { description: 'Automotive Parts', baseWeight: 600, class: 'Class 65' },
+      { description: 'Construction Materials', baseWeight: 1100, class: 'Class 70' },
+      { description: 'Chemical Containers', baseWeight: 950, class: 'Class 55' }
+    ];
+
+    const itemCount = (hash % 3) + 1; // 1-3 items
+    const items = [];
+
+    for (let i = 0; i < itemCount; i++) {
+      const template = itemTemplates[(hash + i) % itemTemplates.length];
+      const quantity = (hash % 50) + 5; // 5-54 pieces
+      const weight = template.baseWeight + ((hash + i) % 400);
+      
+      items.push({
+        description: template.description,
+        quantity: status === 'validation' && i === 0 ? `${quantity} pcs` : quantity,
+        weight: weight,
+        class: template.class
+      });
+    }
+
+    return items;
   }
 }
 
