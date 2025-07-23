@@ -1,18 +1,12 @@
 import { User, Settings, CheckCircle, AlertCircle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import NutrientLogo from "@assets/Nutrient_Logo_RGB_OffWhite_1753286682769.png";
+import { ApiConfigDialog } from "./api-config-dialog";
 
 interface XTractFlowStatus {
   configured: boolean;
   mockMode: boolean;
-  details: {
-    hasApiUrl: boolean;
-    hasApiKey: boolean;
-    hasOpenAiKey: boolean;
-    hasAzureConfig: boolean;
-    isUsingMockApi: boolean;
-    environment: string;
-  };
+  description: string;
 }
 
 function XTractFlowStatusIndicator() {
@@ -50,6 +44,16 @@ function XTractFlowStatusIndicator() {
 }
 
 export default function Header() {
+  const queryClient = useQueryClient();
+  const { data: apiStatus } = useQuery<XTractFlowStatus>({
+    queryKey: ['/api/xtractflow/status'],
+    refetchInterval: 10000,
+  });
+
+  const handleConfigUpdate = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/xtractflow/status'] });
+  };
+
   return (
     <header className="bg-nutrient-card border-b border-slate-700 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -67,6 +71,14 @@ export default function Header() {
           </div>
           <div className="flex items-center space-x-6">
             <XTractFlowStatusIndicator />
+            
+            {apiStatus && (
+              <ApiConfigDialog 
+                apiStatus={apiStatus} 
+                onConfigUpdate={handleConfigUpdate}
+              />
+            )}
+            
             <div className="flex items-center space-x-2 text-nutrient-text-secondary">
               <User className="w-5 h-5" />
               <span className="text-sm">Admin User</span>

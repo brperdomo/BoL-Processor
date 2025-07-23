@@ -661,6 +661,71 @@ export class XTractFlowService {
 
     return items;
   }
+
+  getStatus() {
+    return {
+      configured: !!(this.config.apiUrl && this.config.apiKey),
+      mockMode: !this.config.apiUrl || !this.config.apiKey,
+      description: this.config.apiUrl && this.config.apiKey 
+        ? 'XTractFlow API configured and ready for production processing'
+        : 'Using mock processing for development - configure XTractFlow API for production'
+    };
+  }
+
+  getConfig() {
+    return this.config;
+  }
+
+  updateConfig(newConfig: { apiUrl: string; apiKey: string }) {
+    this.config = { ...this.config, ...newConfig };
+  }
+
+  clearConfig() {
+    this.config = { ...this.config, apiUrl: '', apiKey: '' };
+  }
+
+  async testConnection(apiUrl: string, apiKey: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const axios = (await import('axios')).default;
+      
+      // Test the health endpoint
+      const response = await axios.get(`${apiUrl}/api/health`, {
+        headers: {
+          'Authorization': apiKey,
+        },
+        timeout: 10000,
+      });
+
+      if (response.status === 200) {
+        return {
+          success: true,
+          message: 'Successfully connected to XTractFlow API'
+        };
+      } else {
+        return {
+          success: false,
+          message: `API returned status ${response.status}`
+        };
+      }
+    } catch (error: any) {
+      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        return {
+          success: false,
+          message: 'Cannot reach the API endpoint - check the URL'
+        };
+      } else if (error.response?.status === 401) {
+        return {
+          success: false,
+          message: 'Authentication failed - check your API key'
+        };
+      } else {
+        return {
+          success: false,
+          message: error.response?.data?.message || error.message || 'Connection test failed'
+        };
+      }
+    }
+  }
 }
 
 // Environment-based configuration

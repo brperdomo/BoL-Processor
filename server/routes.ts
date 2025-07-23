@@ -28,22 +28,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get XTractFlow configuration status
   app.get("/api/xtractflow/status", async (req, res) => {
     try {
-      const config = {
-        hasApiUrl: !!process.env.XTRACTFLOW_API_URL,
-        hasApiKey: !!process.env.XTRACTFLOW_API_KEY,
-        hasOpenAiKey: !!process.env.OPENAI_API_KEY,
-        hasAzureConfig: !!(process.env.AZURE_OPENAI_ENDPOINT && process.env.AZURE_OPENAI_API_KEY),
-        isUsingMockApi: !process.env.XTRACTFLOW_API_URL || process.env.NODE_ENV === 'development',
-        environment: process.env.NODE_ENV || 'development'
-      };
-      
-      res.json({
-        configured: config.hasApiUrl && config.hasApiKey,
-        mockMode: config.isUsingMockApi,
-        details: config
-      });
+      const status = xtractFlowService.getStatus();
+      res.json(status);
     } catch (error) {
       res.status(500).json({ message: "Failed to get XTractFlow status" });
+    }
+  });
+
+  // XTractFlow configuration endpoints
+  app.get('/api/xtractflow/config', (req, res) => {
+    const config = xtractFlowService.getConfig();
+    res.json({
+      apiUrl: config.apiUrl || '',
+      apiKey: config.apiKey ? '***' : '', // Mask the actual key
+      configured: !!config.apiUrl && !!config.apiKey
+    });
+  });
+
+  app.post('/api/xtractflow/config', (req, res) => {
+    const { apiUrl, apiKey } = req.body;
+    
+    if (!apiUrl || !apiKey) {
+      return res.status(400).json({ message: 'Both API URL and API Key are required' });
+    }
+
+    try {
+      xtractFlowService.updateConfig({ apiUrl, apiKey });
+      res.json({ message: 'Configuration updated successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to update configuration' });
+    }
+  });
+
+  app.delete('/api/xtractflow/config', (req, res) => {
+    try {
+      xtractFlowService.clearConfig();
+      res.json({ message: 'Configuration cleared successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to clear configuration' });
+    }
+  });
+
+  app.post('/api/xtractflow/test', async (req, res) => {
+    const { apiUrl, apiKey } = req.body;
+    
+    if (!apiUrl || !apiKey) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Both API URL and API Key are required' 
+      });
+    }
+
+    try {
+      const result = await xtractFlowService.testConnection(apiUrl, apiKey);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Connection test failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
