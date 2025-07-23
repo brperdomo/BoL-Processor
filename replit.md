@@ -1,8 +1,8 @@
-# Nutrient BOL Processing System
+# Nutrient BOL Processor
 
 ## Overview
 
-This is a full-stack web application for processing Bill of Lading (BOL) documents using AI-powered document extraction. The system allows users to upload documents, processes them through mock AI services, and provides a tabbed interface for managing documents in different states (processing, processed, needs validation, unprocessed).
+This is a full-stack web application for processing Bill of Lading (BOL) documents using Nutrient AI-powered document extraction. The system allows users to upload documents, processes them through mock AI services (designed for easy integration with actual Nutrient AI Document SDK), and provides a tabbed interface for managing documents in different states (processing, processed, needs validation, unprocessed). All Replit-specific references have been removed and replaced with proper Nutrient branding.
 
 ## User Preferences
 

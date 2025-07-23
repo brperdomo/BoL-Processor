@@ -1,5 +1,5 @@
 import { User } from "lucide-react";
-import NutrientLogo from "@/assets/nutrient-logo.svg";
+import NutrientLogo from "@assets/Nutrient_Logo_RGB_OffWhite_1753286682769.png";
 
 export default function Header() {
   return (
@@ -8,12 +8,12 @@ export default function Header() {
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
-              <div className="w-8 h-8 mr-3">
-                <img src={NutrientLogo} alt="Nutrient" className="w-full h-full" />
+              <div className="h-8 mr-3">
+                <img src={NutrientLogo} alt="Nutrient" className="h-full w-auto" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-nutrient-text">Nutrient</h1>
-                <p className="text-sm text-nutrient-text-secondary">BOL Processing System</p>
+                <h1 className="text-xl font-bold text-nutrient-text">Nutrient BOL Processor</h1>
+                <p className="text-sm text-nutrient-text-secondary">Automated Document Processing</p>
               </div>
             </div>
           </div>
