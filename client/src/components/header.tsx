@@ -1,5 +1,53 @@
-import { User } from "lucide-react";
+import { User, Settings, CheckCircle, AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import NutrientLogo from "@assets/Nutrient_Logo_RGB_OffWhite_1753286682769.png";
+
+interface XTractFlowStatus {
+  configured: boolean;
+  mockMode: boolean;
+  details: {
+    hasApiUrl: boolean;
+    hasApiKey: boolean;
+    hasOpenAiKey: boolean;
+    hasAzureConfig: boolean;
+    isUsingMockApi: boolean;
+    environment: string;
+  };
+}
+
+function XTractFlowStatusIndicator() {
+  const { data: status } = useQuery<XTractFlowStatus>({
+    queryKey: ['/api/xtractflow/status'],
+    refetchInterval: 10000, // Check every 10 seconds
+  });
+
+  if (!status) return null;
+
+  const getStatusColor = () => {
+    if (status.configured && !status.mockMode) return "text-green-400";
+    if (status.mockMode) return "text-yellow-400";
+    return "text-red-400";
+  };
+
+  const getStatusIcon = () => {
+    if (status.configured && !status.mockMode) return <CheckCircle className="w-4 h-4" />;
+    if (status.mockMode) return <Settings className="w-4 h-4" />;
+    return <AlertCircle className="w-4 h-4" />;
+  };
+
+  const getStatusText = () => {
+    if (status.configured && !status.mockMode) return "XTractFlow API Connected";
+    if (status.mockMode) return "Mock Processing Mode";
+    return "XTractFlow API Not Configured";
+  };
+
+  return (
+    <div className={`flex items-center space-x-2 ${getStatusColor()}`}>
+      {getStatusIcon()}
+      <span className="text-sm font-medium">{getStatusText()}</span>
+    </div>
+  );
+}
 
 export default function Header() {
   return (
@@ -13,11 +61,12 @@ export default function Header() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-nutrient-text">Nutrient BOL Processor</h1>
-                <p className="text-sm text-nutrient-text-secondary">Automated Document Processing</p>
+                <p className="text-sm text-nutrient-text-secondary">AI-Powered Document Processing</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
+            <XTractFlowStatusIndicator />
             <div className="flex items-center space-x-2 text-nutrient-text-secondary">
               <User className="w-5 h-5" />
               <span className="text-sm">Admin User</span>

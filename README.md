@@ -120,23 +120,80 @@ nutrient-bol-processor/
    - **Needs Validation**: Requires manual review due to low confidence
    - **Unprocessed**: Failed processing due to errors
 
-## Mock AI Processing
+## XTractFlow AI Integration
 
-The current implementation uses mock processing that simulates real Nutrient AI behavior:
+This application integrates with Nutrient's XTractFlow (AI Document Processing) service for intelligent BOL data extraction. The system supports both **mock processing mode** (for development) and **production API mode**.
 
-- **Document Classification**: Detects BOL vs other document types
-- **Field Extraction**: Extracts structured data (BOL number, shipper, consignee, etc.)
-- **Confidence Scoring**: Assigns confidence levels to extracted data
-- **Error Simulation**: Handles various failure scenarios (poor quality, wrong document type)
+### Current Processing Capabilities
 
-## Integration with Nutrient AI
+- **Document Classification**: Automatically identifies BOL documents vs other types
+- **Natural Language Extraction**: Uses AI to extract structured data fields
+- **Confidence Scoring**: Provides accuracy scores for extracted information
+- **Validation Workflow**: Routes documents based on extraction confidence
+- **Error Handling**: Manages various failure scenarios gracefully
 
-To integrate with actual Nutrient AI Document SDK:
+### Environment Configuration
 
-1. Replace mock processing in `server/routes.ts`
-2. Add Nutrient AI SDK dependencies
-3. Configure API credentials
-4. Update processing logic to use real AI endpoints
+The application automatically detects your environment configuration and switches between mock and production modes:
+
+#### Production Mode (Real XTractFlow API)
+
+Set these environment variables to enable production processing:
+
+```bash
+# Required for XTractFlow API
+XTRACTFLOW_API_URL=https://your-xtractflow-endpoint.com
+XTRACTFLOW_API_KEY=your-api-key-here
+
+# Required for AI processing (choose one)
+OPENAI_API_KEY=your-openai-key-here
+# OR
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+AZURE_OPENAI_API_KEY=your-azure-key-here
+```
+
+#### Development Mode (Mock Processing)
+
+The application automatically uses mock processing when:
+- `XTRACTFLOW_API_URL` is not set
+- `NODE_ENV=development`
+- API credentials are missing
+
+### API Status Monitoring
+
+The application header displays real-time XTractFlow status:
+
+- 🟢 **XTractFlow API Connected**: Production mode with valid credentials
+- 🟡 **Mock Processing Mode**: Development mode using simulated processing  
+- 🔴 **XTractFlow API Not Configured**: Missing required environment variables
+
+### Getting XTractFlow Access
+
+1. **Contact Nutrient Sales**: Visit [nutrient.io](https://www.nutrient.io/contact-sales/) to request access
+2. **Free Trial Available**: Get a complimentary trial license for testing
+3. **LLM Provider Setup**: Create accounts with OpenAI or Azure OpenAI
+4. **API Deployment**: Deploy XTractFlow as REST microservice or embedded API
+
+### Integration Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   File Upload   │───▶│  XTractFlow API  │───▶│  Data Storage   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Document Validation │ Classification &   │    │ Status Updates  │
+│ (PDF, Images)   │    │ Field Extraction │    │ (Real-time)     │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### Production Deployment Notes
+
+- **Privacy**: XTractFlow processes documents without storing content
+- **Scalability**: Supports batch processing and multithreaded operations
+- **Compliance**: SOC 2 Type 2 compliant (OpenAI) / HIPAA compliant (Azure)
+- **Regional Hosting**: Can be deployed in any global region
 
 ## Troubleshooting
 

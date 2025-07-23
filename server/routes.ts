@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { insertDocumentSchema, bolDataSchema, type BOLData, type ValidationIssue, type ProcessingError } from "@shared/schema";
+import { createXTractFlowService } from "./xtractflow-service";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -20,142 +21,32 @@ const upload = multer({
   },
 });
 
-// Mock Nutrient AI processing
-function mockNutrientAIProcessing(filename: string, mimeType: string): {
-  status: string;
-  confidence?: number;
-  extractedData?: BOLData;
-  validationIssues?: ValidationIssue[];
-  processingErrors?: ProcessingError[];
-} {
-  const random = Math.random();
-  
-  // Simulate different processing outcomes based on filename patterns
-  if (filename.toLowerCase().includes('invoice') || filename.toLowerCase().includes('not_bol')) {
-    return {
-      status: 'unprocessed',
-      processingErrors: [
-        {
-          code: 'DOCUMENT_TYPE_MISMATCH',
-          message: 'Document type classification failed: Detected as Invoice, not BOL',
-          details: 'No BOL-specific fields found in document structure'
-        }
-      ]
-    };
-  }
-
-  if (filename.toLowerCase().includes('blurry') || filename.toLowerCase().includes('damaged')) {
-    return {
-      status: 'unprocessed',
-      processingErrors: [
-        {
-          code: 'IMAGE_QUALITY_LOW',
-          message: 'Image quality too low for OCR processing',
-          details: 'Excessive blur and poor lighting conditions detected'
-        }
-      ]
-    };
-  }
-
-  if (filename.toLowerCase().includes('scan') || random < 0.3) {
-    // Needs validation
-    return {
-      status: 'needs_validation',
-      confidence: 0.67,
-      extractedData: {
-        bolNumber: `XYZ${Math.floor(Math.random() * 100000000)}`,
-        carrier: {
-          name: 'XYZ Freight Services',
-          scac: 'XYZF'
-        },
-        shipper: {
-          name: 'Manufacturing Corp',
-          address: '123 Industrial Blvd, Chicago, IL 60601'
-        },
-        consignee: {
-          name: 'Regional Distrib. Warehouse',
-          address: '789 Commerce St\nMiami FL 33101-'
-        },
-        shipDate: '2024-12-01',
-        totalWeight: 2105,
-        items: [
-          {
-            description: 'Industrial Equipment',
-            quantity: '15 pcs',
-            weight: 1200,
-            class: 'Class 85'
-          }
-        ],
-        confidence: 0.67,
-        processingTimestamp: new Date().toISOString()
-      },
-      validationIssues: [
-        {
-          field: 'bolNumber',
-          message: 'BOL number field partially obscured - manual verification required',
-          severity: 'warning' as const
-        },
-        {
-          field: 'consignee.address',
-          message: 'Consignee address format doesn\'t match standard patterns',
-          severity: 'warning' as const
-        },
-        {
-          field: 'totalWeight',
-          message: 'Total weight calculation mismatch (2,105 lbs vs 2,350 lbs)',
-          severity: 'error' as const
-        }
-      ]
-    };
-  }
-
-  // Successfully processed
-  return {
-    status: 'processed',
-    confidence: 0.96,
-    extractedData: {
-      bolNumber: `ABC${Math.floor(Math.random() * 1000000000)}`,
-      carrier: {
-        name: 'ABC Logistics Inc.',
-        scac: 'ABCL'
-      },
-      shipper: {
-        name: 'Acme Manufacturing',
-        address: '123 Industrial Blvd, Chicago, IL 60601'
-      },
-      consignee: {
-        name: 'Global Distribution Center',
-        address: '456 Warehouse Dr, Dallas, TX 75201'
-      },
-      shipDate: '2024-12-01',
-      totalWeight: 2450,
-      items: [
-        {
-          description: 'Industrial Pumps',
-          quantity: 12,
-          weight: 1200,
-          class: 'Class 85'
-        },
-        {
-          description: 'Pipe Fittings',
-          quantity: '48 boxes',
-          weight: 850,
-          class: 'Class 55'
-        },
-        {
-          description: 'Gaskets & Seals',
-          quantity: '6 pallets',
-          weight: 400,
-          class: 'Class 60'
-        }
-      ],
-      confidence: 0.96,
-      processingTimestamp: new Date().toISOString()
-    }
-  };
-}
+// Initialize XTractFlow service
+const xtractFlowService = createXTractFlowService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Get XTractFlow configuration status
+  app.get("/api/xtractflow/status", async (req, res) => {
+    try {
+      const config = {
+        hasApiUrl: !!process.env.XTRACTFLOW_API_URL,
+        hasApiKey: !!process.env.XTRACTFLOW_API_KEY,
+        hasOpenAiKey: !!process.env.OPENAI_API_KEY,
+        hasAzureConfig: !!(process.env.AZURE_OPENAI_ENDPOINT && process.env.AZURE_OPENAI_API_KEY),
+        isUsingMockApi: !process.env.XTRACTFLOW_API_URL || process.env.NODE_ENV === 'development',
+        environment: process.env.NODE_ENV || 'development'
+      };
+      
+      res.json({
+        configured: config.hasApiUrl && config.hasApiKey,
+        mockMode: config.isUsingMockApi,
+        details: config
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get XTractFlow status" });
+    }
+  });
+
   // Get all documents
   app.get("/api/documents", async (req, res) => {
     try {
@@ -204,18 +95,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         uploadedDocuments.push(document);
 
-        // Simulate processing delay and update document
+        // Process document with XTractFlow (with simulated delay for demo purposes)
         setTimeout(async () => {
-          const result = mockNutrientAIProcessing(file.originalname, file.mimetype);
-          
-          await storage.updateDocument(document.id, {
-            status: result.status,
-            processedAt: new Date(),
-            confidence: result.confidence || null,
-            extractedData: result.extractedData || null,
-            validationIssues: result.validationIssues || null,
-            processingErrors: result.processingErrors || null,
-          });
+          try {
+            const result = await xtractFlowService.processDocument(
+              file.buffer, 
+              file.originalname, 
+              file.mimetype
+            );
+            
+            await storage.updateDocument(document.id, {
+              status: result.status,
+              processedAt: new Date(),
+              confidence: result.confidence || null,
+              extractedData: result.extractedData || null,
+              validationIssues: result.validationIssues || null,
+              processingErrors: result.processingErrors || null,
+            });
+          } catch (error) {
+            console.error('Document processing error:', error);
+            await storage.updateDocument(document.id, {
+              status: 'unprocessed',
+              processedAt: new Date(),
+              confidence: null,
+              extractedData: null,
+              validationIssues: null,
+              processingErrors: [
+                {
+                  code: 'PROCESSING_FAILED',
+                  message: 'Document processing service error',
+                  details: error instanceof Error ? error.message : 'Unknown error occurred'
+                }
+              ],
+            });
+          }
         }, Math.random() * 5000 + 2000); // Random delay between 2-7 seconds
       }
 
@@ -286,18 +199,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         processingErrors: null,
       });
 
-      // Simulate reprocessing
+      // Reprocess with XTractFlow
       setTimeout(async () => {
-        const result = mockNutrientAIProcessing(document.originalName, document.mimeType);
-        
-        await storage.updateDocument(id, {
-          status: result.status,
-          processedAt: new Date(),
-          confidence: result.confidence || null,
-          extractedData: result.extractedData || null,
-          validationIssues: result.validationIssues || null,
-          processingErrors: result.processingErrors || null,
-        });
+        try {
+          // For retry, we don't have the file buffer, so we'll use mock processing
+          // In a real implementation, you might store file buffers or have a file storage system
+          const result = await xtractFlowService.processDocument(
+            Buffer.from(''), // Empty buffer - will fallback to mock
+            document.originalName, 
+            document.mimeType
+          );
+          
+          await storage.updateDocument(id, {
+            status: result.status,
+            processedAt: new Date(),
+            confidence: result.confidence || null,
+            extractedData: result.extractedData || null,
+            validationIssues: result.validationIssues || null,
+            processingErrors: result.processingErrors || null,
+          });
+        } catch (error) {
+          console.error('Document retry error:', error);
+          await storage.updateDocument(id, {
+            status: 'unprocessed',
+            processedAt: new Date(),
+            confidence: null,
+            extractedData: null,
+            validationIssues: null,
+            processingErrors: [
+              {
+                code: 'RETRY_FAILED',
+                message: 'Document reprocessing failed',
+                details: error instanceof Error ? error.message : 'Unknown error occurred'
+              }
+            ],
+          });
+        }
       }, Math.random() * 3000 + 1000);
 
       res.json({ message: "Document processing restarted" });

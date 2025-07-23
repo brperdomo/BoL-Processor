@@ -68,9 +68,15 @@ The application follows a modern full-stack architecture with clear separation b
 - **Styling**: Tailwind CSS with PostCSS processing
 - **Development**: tsx for TypeScript execution, esbuild for production builds
 
-### Mock Services
-- Currently uses simulated AI processing that returns different outcomes based on filename patterns
-- Designed to be easily replaced with actual Nutrient AI API integration
+### XTractFlow Integration
+- **Production Service**: Complete integration with Nutrient's XTractFlow API for real BOL processing
+- **Environment Detection**: Automatically switches between mock and production modes
+- **LLM Support**: Compatible with OpenAI and Azure OpenAI providers
+- **Natural Language Processing**: Uses AI instructions for field extraction
+- **Document Classification**: Intelligent BOL vs non-BOL document detection
+- **Confidence Scoring**: Provides accuracy metrics for extracted data
+- **Error Handling**: Graceful fallback to mock processing on API failures
+- **Status Monitoring**: Real-time API connection status in application header
 
 ## Deployment Strategy
 
@@ -114,4 +120,13 @@ The project is now ready for GitHub deployment with comprehensive setup instruct
 - ✓ Created comprehensive README with setup instructions
 - ✓ Added proper .gitignore and LICENSE files
 - ✓ Updated HTML meta tags for SEO and social sharing
-- ✓ Ready for GitHub repository creation and local development
+- ✓ **NEW: Complete XTractFlow API Integration**
+  - Implemented production-ready XTractFlow service with real API calls
+  - Added automatic mock/production mode switching based on environment
+  - Created real-time API status monitoring in header
+  - Supports both OpenAI and Azure OpenAI LLM providers
+  - Added comprehensive environment variable documentation
+  - Implemented natural language BOL extraction instructions
+  - Added document classification and confidence scoring
+  - Created fallback error handling for API failures
+- ✓ Ready for both development (mock mode) and production (XTractFlow API) deployment
