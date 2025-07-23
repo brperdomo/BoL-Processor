@@ -1,0 +1,458 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "XtractFlow.API | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/get-predefined-templates": {
+      "get": {
+        "tags": [
+          "XtractFlow.API"
+        ],
+        "summary": "Retrieve predefined templates",
+        "description": "Get the predefined templates available in XtractFlow. This is useful to see how the templates are set up and to use them as a reference when creating your own templates.",
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Template"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "Authorization",
+          "in": "header",
+          "description": "API Key",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/api/register-component": {
+      "post": {
+        "tags": [
+          "XtractFlow.API"
+        ],
+        "summary": "Register component",
+        "description": "Register a new component with the provided templates, you can see how the predefined template are set using the `get-predefined-template` api. The componentId is returned in the response and can be used to process files with this component.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Component"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisteredComponent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "Authorization",
+          "in": "header",
+          "description": "API Key",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/api/process": {
+      "post": {
+        "tags": [
+          "XtractFlow.API"
+        ],
+        "summary": "Process file",
+        "description": "Process a file using the registered component. The componentId is optional. If not provided, the default component (using all the predefined templates) will be used.",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "inputFile"
+                ],
+                "type": "object",
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "inputFile": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "componentId": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "Authorization",
+          "in": "header",
+          "description": "API Key",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/api/generate-thumbnail": {
+      "post": {
+        "tags": [
+          "XtractFlow.API"
+        ],
+        "summary": "Generate thumbnail",
+        "description": "Generate a thumbnail for the provided file. The thumbnail is generated using the GdPicture library.",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "inputFile"
+                ],
+                "type": "object",
+                "properties": {
+                  "inputFile": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "Authorization",
+          "in": "header",
+          "description": "API Key",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "XtractFlow.API"
+        ],
+        "summary": "Health check",
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "Authorization",
+          "in": "header",
+          "description": "API Key",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "schemas": {
+      "Component": {
+        "type": "object",
+        "properties": {
+          "enableClassifier": {
+            "type": "boolean"
+          },
+          "enableExtraction": {
+            "type": "boolean"
+          },
+          "templates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Template"
+            }
+          }
+        }
+      },
+      "ExtractedField": {
+        "type": "object",
+        "properties": {
+          "fieldName": {
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/components/schemas/FieldValue"
+          },
+          "validationState": {
+            "$ref": "#/components/schemas/FieldValidationState"
+          }
+        }
+      },
+      "FieldDataFormat": {
+        "enum": [
+          "Text",
+          "Number",
+          "Date",
+          "Currency"
+        ]
+      },
+      "FieldValidationState": {
+        "enum": [
+          "Undefined",
+          "VerificationNeeded",
+          "Valid"
+        ]
+      },
+      "FieldValue": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "format": {
+            "$ref": "#/components/schemas/FieldDataFormat"
+          }
+        }
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "NullableOfStandardFieldValidation": {
+        "enum": [
+          "PostalAddressIntegrity",
+          "IBANIntegrity",
+          "CreditCardNumberIntegrity",
+          "VehicleIdentificationNumberIntegrity",
+          "EmailIntegrity",
+          "URIIntegrity",
+          "VATIdIntegrity",
+          "PhoneNumberIntegrity",
+          "CurrencyIntegrity",
+          "DateIntegrity",
+          "NumberIntegrity",
+          null
+        ],
+        "nullable": true
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ProcessResult": {
+        "type": "object",
+        "properties": {
+          "detectedTemplate": {
+            "type": "string",
+            "nullable": true
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExtractedField"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "RegisteredComponent": {
+        "type": "object",
+        "properties": {
+          "componentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Template": {
+        "required": [
+          "fields"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplateField"
+            }
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "semanticDescription": {
+            "type": "string"
+          }
+        }
+      },
+      "TemplateField": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "semanticDescription": {
+            "type": "string"
+          },
+          "format": {
+            "$ref": "#/components/schemas/FieldDataFormat"
+          },
+          "validationMethod": {
+            "$ref": "#/components/schemas/NullableOfStandardFieldValidation"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "XtractFlow.API"
+    }
+  ]
+}

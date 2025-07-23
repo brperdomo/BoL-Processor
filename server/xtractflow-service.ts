@@ -54,76 +54,349 @@ export class XTractFlowService {
     const FormData = (await import('form-data')).default;
     const axios = (await import('axios')).default;
 
-    // Step 1: Document Classification
-    const classificationFormData = new FormData();
-    classificationFormData.append('document', fileBuffer, fileName);
-    classificationFormData.append('categories', JSON.stringify([
-      'bill_of_lading', 'invoice', 'contract', 'receipt', 'other'
-    ]));
+    try {
+      // Step 1: Create BOL processing component if needed (cache this in production)
+      const componentId = await this.ensureBOLComponent();
 
-    const classificationResponse = await axios.post(
-      `${this.config.apiUrl}/api/classify`,
-      classificationFormData,
-      {
-        headers: {
-          ...classificationFormData.getHeaders(),
-          'Authorization': `Bearer ${this.config.apiKey}`,
-        },
-        timeout: 30000,
+      // Step 2: Process document using XTractFlow API
+      const processFormData = new FormData();
+      processFormData.append('inputFile', fileBuffer, fileName);
+      if (componentId) {
+        processFormData.append('componentId', componentId);
       }
-    );
 
-    const classification = classificationResponse.data;
+      const processResponse = await axios.post(
+        `${this.config.apiUrl}/api/process`,
+        processFormData,
+        {
+          headers: {
+            ...processFormData.getHeaders(),
+            'Authorization': this.config.apiKey,
+          },
+          timeout: 60000,
+        }
+      );
 
-    // If not a BOL, return unprocessed
-    if (classification.category !== 'bill_of_lading' || classification.confidence < 0.7) {
+      const processResult = processResponse.data;
+
+      // Process and validate extracted data
+      return this.processXTractFlowResults(processResult);
+
+    } catch (error: any) {
+      console.error('XTractFlow processing error:', error.response?.data || error.message);
+      
+      // Check if it's a document type mismatch or processing error
+      if (error.response?.status === 404) {
+        return {
+          status: 'unprocessed',
+          processingErrors: [
+            {
+              code: 'COMPONENT_NOT_FOUND',
+              message: 'BOL processing component not configured',
+              details: 'The XTractFlow service needs to be configured with BOL templates'
+            }
+          ]
+        };
+      }
+
+      throw error; // Re-throw to trigger fallback to mock
+    }
+  }
+
+  private async ensureBOLComponent(): Promise<string | null> {
+    try {
+      const FormData = (await import('form-data')).default;
+      const axios = (await import('axios')).default;
+
+      // Register BOL component with predefined templates
+      const component = {
+        enableClassifier: true,
+        enableExtraction: true,
+        templates: [
+          {
+            name: "Bill of Lading",
+            identifier: "bol_template",
+            semanticDescription: "A transportation document that details the shipment of goods, including shipper, consignee, carrier information, and itemized cargo details.",
+            fields: [
+              {
+                name: "bol_number",
+                semanticDescription: "The unique Bill of Lading number or reference number for tracking this shipment",
+                format: "Text"
+              },
+              {
+                name: "carrier_name",
+                semanticDescription: "The transportation company responsible for moving the cargo",
+                format: "Text"
+              },
+              {
+                name: "carrier_scac",
+                semanticDescription: "The Standard Carrier Alpha Code (SCAC) of the transportation company",
+                format: "Text"
+              },
+              {
+                name: "shipper_name",
+                semanticDescription: "The company or individual sending the shipment",
+                format: "Text"
+              },
+              {
+                name: "shipper_address",
+                semanticDescription: "The complete address of the shipper including street, city, state, and ZIP code",
+                format: "Text"
+              },
+              {
+                name: "consignee_name",
+                semanticDescription: "The company or individual receiving the shipment",
+                format: "Text"
+              },
+              {
+                name: "consignee_address",
+                semanticDescription: "The complete delivery address including street, city, state, and ZIP code",
+                format: "Text"
+              },
+              {
+                name: "ship_date",
+                semanticDescription: "The date when the shipment was picked up or shipped",
+                format: "Date"
+              },
+              {
+                name: "total_weight",
+                semanticDescription: "The total weight of all items in the shipment, typically in pounds or kilograms",
+                format: "Number"
+              },
+              {
+                name: "item_descriptions",
+                semanticDescription: "Detailed descriptions of all items/commodities being shipped",
+                format: "Text"
+              },
+              {
+                name: "item_quantities",
+                semanticDescription: "The quantities of each item (pieces, boxes, pallets, etc.)",
+                format: "Text"
+              },
+              {
+                name: "item_weights",
+                semanticDescription: "Individual weights for each item or commodity",
+                format: "Text"
+              },
+              {
+                name: "freight_classes",
+                semanticDescription: "Freight classification codes for each item (Class 50, 85, etc.)",
+                format: "Text"
+              }
+            ]
+          }
+        ]
+      };
+
+      const registerResponse = await axios.post(
+        `${this.config.apiUrl}/api/register-component`,
+        component,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': this.config.apiKey,
+          },
+          timeout: 30000,
+        }
+      );
+
+      return registerResponse.data.componentId;
+
+    } catch (error: any) {
+      console.error('Failed to register BOL component:', error.response?.data || error.message);
+      return null; // Use default component
+    }
+  }
+
+  private processXTractFlowResults(processResult: any): ProcessingResult {
+    // XTractFlow API returns: { detectedTemplate: string, fields: ExtractedField[] }
+    const { detectedTemplate, fields } = processResult;
+
+    // Check if document was classified as BOL
+    if (!detectedTemplate || !detectedTemplate.toLowerCase().includes('bill') && !detectedTemplate.toLowerCase().includes('bol')) {
       return {
         status: 'unprocessed',
         processingErrors: [
           {
             code: 'DOCUMENT_TYPE_MISMATCH',
-            message: `Document classified as ${classification.category} (confidence: ${Math.round(classification.confidence * 100)}%)`,
-            details: 'This appears to be a different document type, not a Bill of Lading'
+            message: `Document classified as ${detectedTemplate || 'unknown'}, not a Bill of Lading`,
+            details: 'This document does not match the expected BOL format'
           }
         ]
       };
     }
 
-    // Step 2: Data Extraction using Natural Language Instructions
-    const extractionFormData = new FormData();
-    extractionFormData.append('document', fileBuffer, fileName);
-    
-    const bolInstructions = `
-      Extract the following information from this Bill of Lading document:
-      1. BOL Number (also called Bill of Lading Number, Waybill Number, or Reference Number)
-      2. Carrier information (company name and SCAC code if available)
-      3. Shipper information (company name and complete address)
-      4. Consignee information (company name and complete address)
-      5. Ship date or pickup date
-      6. Total weight of shipment
-      7. All items/commodities with their descriptions, quantities, weights, and freight classes
-      
-      Please return the data in a structured format with confidence scores for each field.
-    `;
-    
-    extractionFormData.append('natural_language_query', bolInstructions);
+    if (!fields || fields.length === 0) {
+      return {
+        status: 'unprocessed',
+        processingErrors: [
+          {
+            code: 'NO_DATA_EXTRACTED',
+            message: 'No extractable data found in document',
+            details: 'The document may be corrupted, encrypted, or contain only images without text'
+          }
+        ]
+      };
+    }
 
-    const extractionResponse = await axios.post(
-      `${this.config.apiUrl}/api/extract/natural`,
-      extractionFormData,
-      {
-        headers: {
-          ...extractionFormData.getHeaders(),
-          'Authorization': `Bearer ${this.config.apiKey}`,
-        },
-        timeout: 45000,
+    // Convert XTractFlow fields to our BOL data structure
+    const fieldMap = new Map(fields.map((f: any) => [f.fieldName, f]));
+    
+    const bolData: BOLData = {
+      bolNumber: this.getFieldValue(fieldMap.get('bol_number')),
+      carrier: {
+        name: this.getFieldValue(fieldMap.get('carrier_name')),
+        scac: this.getFieldValue(fieldMap.get('carrier_scac')),
+      },
+      shipper: {
+        name: this.getFieldValue(fieldMap.get('shipper_name')),
+        address: this.getFieldValue(fieldMap.get('shipper_address')),
+      },
+      consignee: {
+        name: this.getFieldValue(fieldMap.get('consignee_name')),
+        address: this.getFieldValue(fieldMap.get('consignee_address')),
+      },
+      shipDate: this.getFieldValue(fieldMap.get('ship_date')),
+      totalWeight: this.getNumericValue(fieldMap.get('total_weight')),
+      items: this.parseXTractFlowItems(fieldMap),
+      confidence: this.calculateOverallConfidence(fields),
+      processingTimestamp: new Date().toISOString(),
+    };
+
+    // Analyze validation state and confidence
+    const validationIssues = this.analyzeValidationIssues(fields, bolData);
+    const overallConfidence = bolData.confidence || 0;
+
+    // Determine processing status
+    let status: 'processed' | 'needs_validation' | 'unprocessed';
+    const errorCount = validationIssues.filter(v => v.severity === 'error').length;
+    
+    if (overallConfidence >= 0.9 && errorCount === 0) {
+      status = 'processed';
+    } else if (overallConfidence >= 0.6 && errorCount <= 2) {
+      status = 'needs_validation';
+    } else {
+      status = 'unprocessed';
+    }
+
+    return {
+      status,
+      confidence: overallConfidence,
+      extractedData: bolData,
+      validationIssues: validationIssues.length > 0 ? validationIssues : undefined,
+    };
+  }
+
+  private getFieldValue(field: any): string | undefined {
+    return field?.value?.value || undefined;
+  }
+
+  private getNumericValue(field: any): number | undefined {
+    const value = this.getFieldValue(field);
+    if (!value) return undefined;
+    const parsed = parseFloat(value.replace(/[^\d.-]/g, ''));
+    return isNaN(parsed) ? undefined : parsed;
+  }
+
+  private parseXTractFlowItems(fieldMap: Map<string, any>): BOLData['items'] {
+    const descriptions = this.getFieldValue(fieldMap.get('item_descriptions'))?.split('\n') || [];
+    const quantities = this.getFieldValue(fieldMap.get('item_quantities'))?.split('\n') || [];
+    const weights = this.getFieldValue(fieldMap.get('item_weights'))?.split('\n') || [];
+    const classes = this.getFieldValue(fieldMap.get('freight_classes'))?.split('\n') || [];
+
+    if (descriptions.length === 0) return undefined;
+
+    const items = [];
+    const maxLength = Math.max(descriptions.length, quantities.length, weights.length, classes.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      const description = descriptions[i]?.trim();
+      if (!description) continue;
+
+      items.push({
+        description,
+        quantity: quantities[i]?.trim() || undefined,
+        weight: this.parseWeight(weights[i]),
+        class: classes[i]?.trim() || undefined,
+      });
+    }
+
+    return items.length > 0 ? items : undefined;
+  }
+
+  private parseWeight(weightStr: string | undefined): number | undefined {
+    if (!weightStr) return undefined;
+    const parsed = parseFloat(weightStr.replace(/[^\d.-]/g, ''));
+    return isNaN(parsed) ? undefined : parsed;
+  }
+
+  private calculateOverallConfidence(fields: any[]): number {
+    if (!fields || fields.length === 0) return 0;
+
+    // XTractFlow validation states: Undefined, VerificationNeeded, Valid
+    const validFields = fields.filter(f => f.validationState === 'Valid').length;
+    const needsVerification = fields.filter(f => f.validationState === 'VerificationNeeded').length;
+    const totalFields = fields.length;
+
+    // Calculate confidence based on validation states
+    const baseConfidence = (validFields + (needsVerification * 0.7)) / totalFields;
+    return Math.round(baseConfidence * 100) / 100;
+  }
+
+  private analyzeValidationIssues(fields: any[], bolData: BOLData): ValidationIssue[] {
+    const issues: ValidationIssue[] = [];
+
+    // Check validation states from XTractFlow
+    fields.forEach((field: any) => {
+      if (field.validationState === 'VerificationNeeded') {
+        issues.push({
+          field: field.fieldName,
+          message: `Field requires manual verification - extracted value may be incomplete`,
+          severity: 'warning'
+        });
+      } else if (field.validationState === 'Undefined' && field.value?.value) {
+        issues.push({
+          field: field.fieldName,
+          message: `Field validation inconclusive - please review extracted data`,
+          severity: 'warning'
+        });
       }
-    );
+    });
 
-    const extractionData = extractionResponse.data;
+    // Check for missing critical fields
+    if (!bolData.bolNumber) {
+      issues.push({
+        field: 'bolNumber',
+        message: 'BOL number is required but could not be extracted',
+        severity: 'error'
+      });
+    }
 
-    // Process and validate extracted data
-    return this.processExtractionResults(extractionData, classification.confidence);
+    if (!bolData.carrier?.name) {
+      issues.push({
+        field: 'carrier.name',
+        message: 'Carrier information is missing or unclear',
+        severity: 'warning'
+      });
+    }
+
+    if (!bolData.shipper?.name) {
+      issues.push({
+        field: 'shipper.name',
+        message: 'Shipper information is required but missing',
+        severity: 'error'
+      });
+    }
+
+    if (!bolData.consignee?.name) {
+      issues.push({
+        field: 'consignee.name',
+        message: 'Consignee information is required but missing',
+        severity: 'error'
+      });
+    }
+
+    return issues;
   }
 
   private processExtractionResults(extractionData: any, classificationConfidence: number): ProcessingResult {
