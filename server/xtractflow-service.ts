@@ -327,10 +327,19 @@ export class XTractFlowService {
   }
 
   private parseXTractFlowItems(fieldMap: Map<string, any>): BOLData['items'] {
-    const descriptions = this.getFieldValue(fieldMap.get('item_descriptions'))?.split('\n') || [];
-    const quantities = this.getFieldValue(fieldMap.get('item_quantities'))?.split('\n') || [];
-    const weights = this.getFieldValue(fieldMap.get('item_weights'))?.split('\n') || [];
-    const classes = this.getFieldValue(fieldMap.get('freight_classes'))?.split('\n') || [];
+    // Get raw field values
+    const descriptionsRaw = this.getFieldValue(fieldMap.get('item_descriptions'));
+    const quantitiesRaw = this.getFieldValue(fieldMap.get('item_quantities'));
+    const weightsRaw = this.getFieldValue(fieldMap.get('item_weights'));
+    const classesRaw = this.getFieldValue(fieldMap.get('freight_classes'));
+
+    if (!descriptionsRaw) return undefined;
+
+    // Parse comma-separated or newline-separated values
+    const descriptions = this.parseMultiValue(descriptionsRaw);
+    const quantities = this.parseMultiValue(quantitiesRaw);
+    const weights = this.parseMultiValue(weightsRaw);
+    const classes = this.parseMultiValue(classesRaw);
 
     if (descriptions.length === 0) return undefined;
 
@@ -341,15 +350,60 @@ export class XTractFlowService {
       const description = descriptions[i]?.trim();
       if (!description) continue;
 
-      items.push({
+      const item = {
         description,
-        quantity: quantities[i]?.trim() || undefined,
+        quantity: this.parseQuantity(quantities[i]),
         weight: this.parseWeight(weights[i]),
         class: classes[i]?.trim() || undefined,
-      });
+      };
+
+      // Only add items that have meaningful data
+      if (item.description && (item.quantity !== undefined || item.weight !== undefined || item.class)) {
+        items.push(item);
+      }
     }
 
     return items.length > 0 ? items : undefined;
+  }
+
+  private parseMultiValue(value: string | undefined): string[] {
+    if (!value) return [];
+    
+    // Handle numbered list format like "1. Experience, 2. Since, 3. High"
+    if (value.includes(',') && /\d+\.\s/.test(value)) {
+      // Parse numbered list: split by comma and remove numbering
+      return value.split(',').map(item => {
+        const cleaned = item.trim();
+        // Remove numbering like "1. ", "2. ", etc.
+        return cleaned.replace(/^\d+\.\s*/, '');
+      }).filter(item => item.length > 0);
+    }
+    // Handle regular comma-separated values
+    else if (value.includes(',')) {
+      return value.split(',').map(item => item.trim()).filter(item => item.length > 0);
+    }
+    // Handle newline-separated values
+    else if (value.includes('\n')) {
+      return value.split('\n').map(item => item.trim()).filter(item => item.length > 0);
+    }
+    // Single value
+    else {
+      return [value.trim()];
+    }
+  }
+
+  private parseQuantity(quantityStr: string | undefined): number | string | undefined {
+    if (!quantityStr) return undefined;
+    
+    const cleaned = quantityStr.trim();
+    // Try to parse as number first
+    const parsed = parseFloat(cleaned.replace(/[^\d.-]/g, ''));
+    if (!isNaN(parsed)) {
+      return parsed;
+    }
+    
+    // Return as string if it contains text (like "14 units")
+    return cleaned;
   }
 
   private parseWeight(weightStr: string | undefined): number | undefined {
