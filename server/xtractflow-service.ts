@@ -16,9 +16,32 @@ export interface ProcessingResult {
 
 export class XTractFlowService {
   private config: XTractFlowConfig;
+  private configPath = './xtractflow-config.json';
 
   constructor(config: XTractFlowConfig) {
-    this.config = config;
+    this.config = this.loadConfig() || config;
+  }
+
+  private loadConfig(): XTractFlowConfig | null {
+    try {
+      const fs = require('fs');
+      if (fs.existsSync(this.configPath)) {
+        const configData = fs.readFileSync(this.configPath, 'utf8');
+        return JSON.parse(configData);
+      }
+    } catch (error) {
+      console.log('Could not load saved XTractFlow config:', error);
+    }
+    return null;
+  }
+
+  private saveConfig(): void {
+    try {
+      const fs = require('fs');
+      fs.writeFileSync(this.configPath, JSON.stringify(this.config, null, 2));
+    } catch (error) {
+      console.error('Could not save XTractFlow config:', error);
+    }
   }
 
   async processDocument(
@@ -764,6 +787,7 @@ export class XTractFlowService {
       useMockApi: !(newConfig.apiUrl && newConfig.apiKey)
     };
     console.log('New config state:', this.config);
+    this.saveConfig();
   }
 
 
@@ -778,6 +802,7 @@ export class XTractFlowService {
       apiKey: '',
       useMockApi: true
     };
+    this.saveConfig();
   }
 
   async testConnection(apiUrl: string, apiKey: string): Promise<{ success: boolean; message: string }> {
