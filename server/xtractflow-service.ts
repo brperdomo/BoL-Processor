@@ -269,10 +269,16 @@ export class XTractFlowService {
     // Determine processing status
     let status: 'processed' | 'needs_validation' | 'unprocessed';
     const errorCount = validationIssues.filter(v => v.severity === 'error').length;
+    const warningCount = validationIssues.filter(v => v.severity === 'warning').length;
     
-    if (overallConfidence >= 0.9 && errorCount === 0) {
+    // More lenient status logic for XTractFlow API responses
+    if (overallConfidence >= 0.8 && errorCount === 0) {
       status = 'processed';
-    } else if (overallConfidence >= 0.6 && errorCount <= 2) {
+    } else if (overallConfidence >= 0.3 && errorCount <= 2 && bolData.bolNumber) {
+      // If we have essential data (BOL number) and reasonable confidence, mark for validation
+      status = 'needs_validation';
+    } else if (bolData.bolNumber && (bolData.carrier?.name || bolData.shipper?.name)) {
+      // If we have basic required fields, mark for validation even with low confidence
       status = 'needs_validation';
     } else {
       status = 'unprocessed';
@@ -335,11 +341,26 @@ export class XTractFlowService {
     // XTractFlow validation states: Undefined, VerificationNeeded, Valid
     const validFields = fields.filter(f => f.validationState === 'Valid').length;
     const needsVerification = fields.filter(f => f.validationState === 'VerificationNeeded').length;
+    const undefinedFields = fields.filter(f => f.validationState === 'Undefined' || !f.validationState).length;
     const totalFields = fields.length;
 
-    // Calculate confidence based on validation states
-    const baseConfidence = (validFields + (needsVerification * 0.7)) / totalFields;
-    return Math.round(baseConfidence * 100) / 100;
+    // Count fields with extracted values as partially successful
+    const fieldsWithData = fields.filter(f => f.value && f.value.value && f.value.value.trim()).length;
+
+    // Calculate confidence based on validation states and data presence
+    let baseConfidence;
+    
+    if (validFields > 0) {
+      // Some fields are explicitly valid
+      baseConfidence = (validFields + (needsVerification * 0.7) + (fieldsWithData * 0.5)) / totalFields;
+    } else if (fieldsWithData > 0) {
+      // No explicit validation but we have extracted data
+      baseConfidence = Math.min(0.8, fieldsWithData / totalFields);
+    } else {
+      baseConfidence = 0;
+    }
+
+    return Math.round(Math.max(baseConfidence, 0.1) * 100) / 100;
   }
 
   private analyzeValidationIssues(fields: any[], bolData: BOLData): ValidationIssue[] {
