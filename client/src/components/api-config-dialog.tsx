@@ -49,7 +49,7 @@ export function ApiConfigDialog({ apiStatus, onConfigUpdate }: ApiConfigDialogPr
     if (!apiUrl || !apiKey) {
       toast({
         title: "Missing Configuration",
-        description: "Please provide both API URL and API Key",
+        description: "Please provide both XTractFlow API URL and API Key",
         variant: "destructive",
       });
       return;
@@ -75,7 +75,7 @@ export function ApiConfigDialog({ apiStatus, onConfigUpdate }: ApiConfigDialogPr
       } else {
         toast({
           title: "Connection Failed",
-          description: result.message || "Unable to connect to XTractFlow API",
+          description: result.message || "Failed to connect to XTractFlow API",
           variant: "destructive",
         });
       }
@@ -91,6 +91,15 @@ export function ApiConfigDialog({ apiStatus, onConfigUpdate }: ApiConfigDialogPr
   };
 
   const saveConfiguration = async () => {
+    if (!apiUrl || !apiKey) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide both API URL and API Key",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch('/api/xtractflow/config', {
@@ -104,15 +113,15 @@ export function ApiConfigDialog({ apiStatus, onConfigUpdate }: ApiConfigDialogPr
       if (response.ok) {
         toast({
           title: "Configuration Saved",
-          description: "XTractFlow API settings have been updated",
+          description: "XTractFlow API configuration updated successfully",
         });
         setOpen(false);
         onConfigUpdate();
       } else {
-        const error = await response.json();
+        const result = await response.json();
         toast({
           title: "Save Failed",
-          description: error.message || "Failed to save configuration",
+          description: result.message || "Failed to save configuration",
           variant: "destructive",
         });
       }
@@ -225,7 +234,7 @@ export function ApiConfigDialog({ apiStatus, onConfigUpdate }: ApiConfigDialogPr
                 <Input
                   id="apiKey"
                   type={showApiKey ? 'text' : 'password'}
-                  placeholder="Enter your XTractFlow API key"
+                  placeholder="Your XTractFlow API key"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   className="pr-10"
@@ -253,28 +262,27 @@ export function ApiConfigDialog({ apiStatus, onConfigUpdate }: ApiConfigDialogPr
               <Button
                 onClick={testConnection}
                 variant="outline"
-                disabled={!apiUrl || !apiKey || isTestingConnection}
+                disabled={(!apiUrl || !apiKey) || isTestingConnection}
                 className="flex-1"
               >
                 {isTestingConnection ? 'Testing...' : 'Test Connection'}
               </Button>
               <Button
                 onClick={saveConfiguration}
-                disabled={isLoading}
+                disabled={(!apiUrl || !apiKey) || isLoading}
                 className="flex-1"
               >
-                {isLoading ? 'Saving...' : 'Save Configuration'}
+                {isLoading ? 'Saving...' : 'Save & Activate'}
               </Button>
             </div>
-            
             {apiStatus.configured && (
               <Button
                 onClick={clearConfiguration}
-                variant="outline"
+                variant="destructive"
                 disabled={isLoading}
                 className="w-full"
               >
-                Clear Configuration (Switch to Mock Mode)
+                Clear Configuration (Use Mock Mode)
               </Button>
             )}
           </div>
@@ -283,10 +291,11 @@ export function ApiConfigDialog({ apiStatus, onConfigUpdate }: ApiConfigDialogPr
           <div className="text-sm text-muted-foreground space-y-2">
             <p><strong>Getting Started:</strong></p>
             <ul className="list-disc list-inside space-y-1">
-              <li>Contact Nutrient to get your XTractFlow API credentials</li>
-              <li>Test the connection before saving to ensure it works</li>
+              <li>Deploy the .NET XTractFlow service using the provided Docker setup</li>
+              <li>Contact Nutrient for XTractFlow SDK license and credentials</li>
+              <li>Point the API URL to your XTractFlow service endpoint</li>
+              <li>Test the connection to verify BOL processing is working</li>
               <li>Mock mode generates sample data for development purposes</li>
-              <li>Production mode processes real documents with AI extraction</li>
             </ul>
           </div>
         </div>

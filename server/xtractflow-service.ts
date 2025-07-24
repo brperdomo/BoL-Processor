@@ -3,9 +3,6 @@ import type { BOLData, ValidationIssue, ProcessingError } from "@shared/schema";
 export interface XTractFlowConfig {
   apiUrl?: string;
   apiKey?: string;
-  openAiKey?: string;
-  azureEndpoint?: string;
-  azureApiKey?: string;
   useMockApi: boolean;
 }
 
@@ -29,17 +26,19 @@ export class XTractFlowService {
     fileName: string, 
     mimeType: string
   ): Promise<ProcessingResult> {
-    if (this.config.useMockApi) {
-      return this.mockProcessDocument(fileName, mimeType);
+    // Use XTractFlow API if configured (production mode)
+    if (this.config.apiUrl && this.config.apiKey && !this.config.useMockApi) {
+      try {
+        return await this.processWithXTractFlow(fileBuffer, fileName, mimeType);
+      } catch (error) {
+        console.error('XTractFlow API error:', error);
+        throw new Error(`XTractFlow processing failed: ${error}`);
+      }
     }
 
-    try {
-      return await this.processWithXTractFlow(fileBuffer, fileName, mimeType);
-    } catch (error) {
-      console.error('XTractFlow API error:', error);
-      // Fallback to mock if real API fails
-      return this.mockProcessDocument(fileName, mimeType);
-    }
+    // Fallback to mock processing only for development/demo
+    console.log('Using mock processing - configure XTractFlow API for production document processing');
+    return this.mockProcessDocument(fileName, mimeType);
   }
 
   private async processWithXTractFlow(
@@ -240,7 +239,7 @@ export class XTractFlowService {
     }
 
     // Convert XTractFlow fields to our BOL data structure
-    const fieldMap = new Map(fields.map((f: any) => [f.fieldName, f]));
+    const fieldMap = new Map<string, any>(fields.map((f: any) => [f.fieldName, f]));
     
     const bolData: BOLData = {
       bolNumber: this.getFieldValue(fieldMap.get('bol_number')),
@@ -662,14 +661,97 @@ export class XTractFlowService {
     return items;
   }
 
+
+
   getStatus() {
-    return {
-      configured: !!(this.config.apiUrl && this.config.apiKey),
-      mockMode: !this.config.apiUrl || !this.config.apiKey,
-      description: this.config.apiUrl && this.config.apiKey 
-        ? 'XTractFlow API configured and ready for production processing'
-        : 'Using mock processing for development - configure XTractFlow API for production'
+    const hasXTractFlow = !!(this.config.apiUrl && this.config.apiKey);
+    const usingMock = this.config.useMockApi;
+
+    if (hasXTractFlow && !usingMock) {
+      return {
+        configured: true,
+        mockMode: false,
+        description: 'XTractFlow API configured and ready for production processing'
+      };
+    } else {
+      return {
+        configured: false,
+        mockMode: true,
+        description: 'Using mock processing - configure XTractFlow API for real document processing'
+      };
+    }
+  }
+
+  updateConfig(newConfig: { apiUrl?: string; apiKey?: string }) {
+    this.config = { 
+      ...this.config, 
+      apiUrl: newConfig.apiUrl,
+      apiKey: newConfig.apiKey,
+      useMockApi: !newConfig.apiUrl || !newConfig.apiKey
     };
+  }
+
+  clearConfig() {
+    this.config = {
+      apiUrl: '',
+      apiKey: '',
+      openAiKey: '',
+      azureOpenAiKey: '',
+      azureOpenAiEndpoint: '',
+      azureOpenAiDeployment: '',
+      useMockApi: true
+    };
+  }
+
+  async testConnection(apiUrl: string, apiKey: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const axios = (await import('axios')).default;
+      
+      // Test health endpoint first
+      const healthResponse = await axios.get(`${apiUrl}/health`, {
+        timeout: 10000
+      });
+      
+      if (healthResponse.status === 200) {
+        // Try to create a test BOL component to verify full functionality
+        const testResponse = await axios.post(`${apiUrl}/api/components/bol`, {}, {
+          headers: { 'Authorization': `Bearer ${apiKey}` },
+          timeout: 15000
+        });
+        
+        if (testResponse.status === 200) {
+          return { 
+            success: true, 
+            message: 'XTractFlow API connection successful - ready for BOL processing' 
+          };
+        }
+      }
+      
+      return { 
+        success: false, 
+        message: 'XTractFlow API is not responding correctly' 
+      };
+      
+    } catch (error: any) {
+      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        return { 
+          success: false, 
+          message: `Cannot connect to XTractFlow API at ${apiUrl}. Please verify the URL and ensure the service is running.` 
+        };
+      }
+      
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        return { 
+          success: false, 
+          message: 'XTractFlow API key is invalid or lacks required permissions' 
+        };
+      }
+      
+      return { 
+        success: false, 
+        message: `XTractFlow API connection failed: ${error.response?.data?.message || error.message}` 
+      };
+    }
   }
 
   getConfig() {
@@ -733,9 +815,6 @@ export function createXTractFlowService(): XTractFlowService {
   const config: XTractFlowConfig = {
     apiUrl: process.env.XTRACTFLOW_API_URL,
     apiKey: process.env.XTRACTFLOW_API_KEY,
-    openAiKey: process.env.OPENAI_API_KEY,
-    azureEndpoint: process.env.AZURE_OPENAI_ENDPOINT,
-    azureApiKey: process.env.AZURE_OPENAI_API_KEY,
     useMockApi: !process.env.XTRACTFLOW_API_URL || process.env.NODE_ENV === 'development'
   };
 

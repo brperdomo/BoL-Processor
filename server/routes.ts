@@ -41,7 +41,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({
       apiUrl: config.apiUrl || '',
       apiKey: config.apiKey ? '***' : '', // Mask the actual key
-      configured: !!config.apiUrl && !!config.apiKey
+      configured: !!(config.apiUrl && config.apiKey)
     });
   });
 
@@ -49,12 +49,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { apiUrl, apiKey } = req.body;
     
     if (!apiUrl || !apiKey) {
-      return res.status(400).json({ message: 'Both API URL and API Key are required' });
+      return res.status(400).json({ message: 'Both XTractFlow API URL and API Key are required' });
     }
 
     try {
       xtractFlowService.updateConfig({ apiUrl, apiKey });
-      res.json({ message: 'Configuration updated successfully' });
+      res.json({ message: 'XTractFlow configuration updated successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Failed to update configuration' });
     }
@@ -75,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!apiUrl || !apiKey) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Both API URL and API Key are required' 
+        message: 'Both XTractFlow API URL and API Key are required' 
       });
     }
 
@@ -85,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ 
         success: false, 
-        message: 'Connection test failed',
+        message: 'XTractFlow connection test failed',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
