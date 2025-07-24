@@ -772,7 +772,64 @@ export class XTractFlowService {
     return this.config;
   }
 
+  clearConfig() {
+    this.config = {
+      apiUrl: '',
+      apiKey: '',
+      useMockApi: true
+    };
+  }
 
+  async testConnection(apiUrl: string, apiKey: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const axios = (await import('axios')).default;
+      
+      // Test health endpoint first
+      const healthResponse = await axios.get(`${apiUrl}/health`, {
+        timeout: 10000
+      });
+      
+      if (healthResponse.status === 200) {
+        // Try to create a test BOL component to verify full functionality
+        const testResponse = await axios.post(`${apiUrl}/api/components/bol`, {}, {
+          headers: { 'Authorization': apiKey },
+          timeout: 15000
+        });
+        
+        if (testResponse.status === 200) {
+          return { 
+            success: true, 
+            message: 'XTractFlow API connection successful - ready for BOL processing' 
+          };
+        }
+      }
+      
+      return { 
+        success: false, 
+        message: 'XTractFlow API is not responding correctly' 
+      };
+      
+    } catch (error: any) {
+      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        return { 
+          success: false, 
+          message: `Cannot connect to XTractFlow API at ${apiUrl}. Please verify the URL and ensure the service is running.` 
+        };
+      }
+      
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        return { 
+          success: false, 
+          message: 'XTractFlow API key is invalid or lacks required permissions' 
+        };
+      }
+      
+      return { 
+        success: false, 
+        message: `XTractFlow API connection failed: ${error.response?.data?.message || error.message}` 
+      };
+    }
+  }
 
 }
 
