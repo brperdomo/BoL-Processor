@@ -735,131 +735,24 @@ export class XTractFlowService {
   }
 
   updateConfig(newConfig: { apiUrl?: string; apiKey?: string }) {
+    console.log('Updating config with:', newConfig);
     this.config = { 
       ...this.config, 
-      apiUrl: newConfig.apiUrl,
-      apiKey: newConfig.apiKey,
-      useMockApi: !newConfig.apiUrl || !newConfig.apiKey
+      apiUrl: newConfig.apiUrl || '',
+      apiKey: newConfig.apiKey || '',
+      useMockApi: !(newConfig.apiUrl && newConfig.apiKey)
     };
+    console.log('New config state:', this.config);
   }
 
-  clearConfig() {
-    this.config = {
-      apiUrl: '',
-      apiKey: '',
-      openAiKey: '',
-      azureOpenAiKey: '',
-      azureOpenAiEndpoint: '',
-      azureOpenAiDeployment: '',
-      useMockApi: true
-    };
-  }
 
-  async testConnection(apiUrl: string, apiKey: string): Promise<{ success: boolean; message: string }> {
-    try {
-      const axios = (await import('axios')).default;
-      
-      // Test health endpoint first
-      const healthResponse = await axios.get(`${apiUrl}/health`, {
-        timeout: 10000
-      });
-      
-      if (healthResponse.status === 200) {
-        // Try to create a test BOL component to verify full functionality
-        const testResponse = await axios.post(`${apiUrl}/api/components/bol`, {}, {
-          headers: { 'Authorization': `Bearer ${apiKey}` },
-          timeout: 15000
-        });
-        
-        if (testResponse.status === 200) {
-          return { 
-            success: true, 
-            message: 'XTractFlow API connection successful - ready for BOL processing' 
-          };
-        }
-      }
-      
-      return { 
-        success: false, 
-        message: 'XTractFlow API is not responding correctly' 
-      };
-      
-    } catch (error: any) {
-      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-        return { 
-          success: false, 
-          message: `Cannot connect to XTractFlow API at ${apiUrl}. Please verify the URL and ensure the service is running.` 
-        };
-      }
-      
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        return { 
-          success: false, 
-          message: 'XTractFlow API key is invalid or lacks required permissions' 
-        };
-      }
-      
-      return { 
-        success: false, 
-        message: `XTractFlow API connection failed: ${error.response?.data?.message || error.message}` 
-      };
-    }
-  }
 
   getConfig() {
     return this.config;
   }
 
-  updateConfig(newConfig: { apiUrl: string; apiKey: string }) {
-    this.config = { ...this.config, ...newConfig };
-  }
 
-  clearConfig() {
-    this.config = { ...this.config, apiUrl: '', apiKey: '' };
-  }
 
-  async testConnection(apiUrl: string, apiKey: string): Promise<{ success: boolean; message: string }> {
-    try {
-      const axios = (await import('axios')).default;
-      
-      // Test the health endpoint
-      const response = await axios.get(`${apiUrl}/api/health`, {
-        headers: {
-          'Authorization': apiKey,
-        },
-        timeout: 10000,
-      });
-
-      if (response.status === 200) {
-        return {
-          success: true,
-          message: 'Successfully connected to XTractFlow API'
-        };
-      } else {
-        return {
-          success: false,
-          message: `API returned status ${response.status}`
-        };
-      }
-    } catch (error: any) {
-      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-        return {
-          success: false,
-          message: 'Cannot reach the API endpoint - check the URL'
-        };
-      } else if (error.response?.status === 401) {
-        return {
-          success: false,
-          message: 'Authentication failed - check your API key'
-        };
-      } else {
-        return {
-          success: false,
-          message: error.response?.data?.message || error.message || 'Connection test failed'
-        };
-      }
-    }
-  }
 }
 
 // Environment-based configuration
