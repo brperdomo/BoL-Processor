@@ -130,5 +130,17 @@ The project is now ready for GitHub deployment with comprehensive setup instruct
   - Removed all fallback/alternative AI processing (OpenAI direct integration)
   - Implemented proper error handling and connection validation
   - Updated frontend to work exclusively with XTractFlow service
+- ✓ **Fixed Critical Item Parsing Issue**
+  - Resolved concatenated weight numbers (478390261317 → individual weights: 260, 184, 498 lbs)
+  - Implemented proper numbered list parsing for cargo items
+  - Each BOL now shows separate items with individual weights, quantities, descriptions
+  - Data now ready for WMS/ERP/TMS integration with proper item separation
+- ✓ **Comprehensive Local Development Setup**
+  - Updated README with platform-specific instructions for Mac and PC users
+  - Created enhanced setup scripts (setup.sh/setup.bat) with prerequisite checking
+  - Added .NET SDK and Docker installation guidance
+  - Comprehensive troubleshooting section with platform-specific solutions
+  - Complete .NET service documentation with deployment options
+  - Environment configuration templates and examples
 - ✓ Architecture: Node.js frontend → .NET XTractFlow service → Nutrient SDK
 - ✓ Ready for production deployment with proper XTractFlow licensing

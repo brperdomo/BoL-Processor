@@ -35,28 +35,106 @@ A full-stack web application for processing Bill of Lading (BOL) documents using
 
 ## Prerequisites
 
-### For Mac Users
-1. **Node.js 20+**: Install from [nodejs.org](https://nodejs.org/) or use Homebrew:
-   ```bash
-   brew install node@20
-   ```
+### Required Software (Both Mac & PC)
 
-2. **Git**: Usually pre-installed on Mac, or install with:
-   ```bash
-   brew install git
-   ```
+#### 1. Node.js 20+
+**Mac Users:**
+```bash
+# Option A: Download from nodejs.org
+# Visit https://nodejs.org/ and download LTS version
 
-### For PC Users
-1. **Node.js 20+**: Download and install from [nodejs.org](https://nodejs.org/)
-   - Choose the LTS version (20.x.x)
-   - During installation, make sure to check "Add to PATH"
+# Option B: Using Homebrew (recommended)
+brew install node@20
+```
 
-2. **Git**: Download from [git-scm.com](https://git-scm.com/download/win)
-   - Use default installation options
+**PC Users:**
+```bash
+# Download from https://nodejs.org/
+# Choose LTS version (20.x.x)
+# ✅ Check "Add to PATH" during installation
+# ✅ Check "Automatically install necessary tools" for npm
+```
 
-3. **Windows Terminal** (recommended): Install from Microsoft Store for better command line experience
+#### 2. Git
+**Mac Users:**
+```bash
+# Usually pre-installed, or install with:
+brew install git
+```
+
+**PC Users:**
+```bash
+# Download from https://git-scm.com/download/win
+# Use default installation options
+# ✅ Check "Add Git Bash Here" for right-click context menu
+```
+
+#### 3. .NET 8 SDK (Required for XTractFlow Integration)
+**Mac Users:**
+```bash
+# Option A: Download from Microsoft
+# Visit https://dotnet.microsoft.com/download/dotnet/8.0
+
+# Option B: Using Homebrew
+brew install --cask dotnet-sdk
+```
+
+**PC Users:**
+```bash
+# Download from https://dotnet.microsoft.com/download/dotnet/8.0
+# Choose "Download .NET 8.0 SDK"
+# Run installer with default options
+```
+
+#### 4. Docker (Optional - for containerized XTractFlow service)
+**Mac Users:**
+```bash
+# Download Docker Desktop from https://www.docker.com/products/docker-desktop/
+# Or using Homebrew:
+brew install --cask docker
+```
+
+**PC Users:**
+```bash
+# Download Docker Desktop from https://www.docker.com/products/docker-desktop/
+# Follow installation wizard
+# Enable WSL 2 integration if prompted
+```
 
 ## Installation & Setup
+
+### Quick Start Guide
+
+#### Option A: Automated Setup (Recommended)
+
+**Mac/Linux Users:**
+```bash
+# Clone the repository
+git clone <your-github-repo-url>
+cd nutrient-bol-processor
+
+# Run the setup script
+chmod +x setup.sh
+./setup.sh
+
+# Start the application
+npm run dev
+```
+
+**Windows Users:**
+```cmd
+REM Clone the repository
+git clone <your-github-repo-url>
+cd nutrient-bol-processor
+
+REM Run the setup script
+setup.bat
+
+REM Start the application
+npm run dev
+```
+
+#### Option B: Manual Setup
 
 ### 1. Clone the Repository
 ```bash
@@ -64,17 +142,72 @@ git clone <your-github-repo-url>
 cd nutrient-bol-processor
 ```
 
-### 2. Install Dependencies
+### 2. Verify Prerequisites
 ```bash
-npm install
+# Check Node.js version (should be 20+)
+node --version
+
+# Check npm version
+npm --version
+
+# Check .NET version (should be 8.0+)
+dotnet --version
 ```
 
-### 3. Start the Development Server
+### 3. Install Dependencies
+```bash
+# Install Node.js dependencies
+npm install
+
+# Verify installation
+npm list --depth=0
+```
+
+### 4. Environment Configuration
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit .env file with your preferred text editor
+# For production: Add XTractFlow API credentials
+# For development: Leave empty to use mock mode
+```
+
+### 5. Start the Application
+
+**Development Mode (Mock Processing):**
 ```bash
 npm run dev
 ```
 
+**Production Mode (Real XTractFlow API):**
+```bash
+# Make sure .env has XTractFlow credentials configured
+NODE_ENV=production npm run dev
+```
+
 The application will start on `http://localhost:5000`
+
+### 6. Optional: XTractFlow .NET Service
+
+For production use with real XTractFlow processing:
+
+**Using Docker (Recommended):**
+```bash
+# Build and run XTractFlow service
+cd dotnet-service
+docker build -t xtractflow-service .
+docker run -p 8080:8080 -e OPENAI_API_KEY=your_key_here xtractflow-service
+```
+
+**Using .NET CLI:**
+```bash
+# Build and run locally
+cd dotnet-service
+dotnet restore
+dotnet build
+dotnet run --urls=http://localhost:8080
+```
 
 ## Available Scripts
 
@@ -199,36 +332,114 @@ The application header displays real-time XTractFlow status:
 
 ### Common Issues
 
-**Port 5000 already in use:**
+#### **Port 5000 already in use:**
+**Mac/Linux:**
 ```bash
-# Kill any process using port 5000
-# Mac/Linux:
+# Find and kill process using port 5000
 lsof -ti :5000 | xargs kill -9
 
-# Windows:
-netstat -ano | findstr :5000
-taskkill /PID <PID_NUMBER> /F
+# Alternative: Use different port
+PORT=3000 npm run dev
 ```
 
-**Node.js version issues:**
+**Windows:**
+```cmd
+REM Find process using port 5000
+netstat -ano | findstr :5000
+
+REM Kill the process (replace PID_NUMBER with actual PID)
+taskkill /PID <PID_NUMBER> /F
+
+REM Alternative: Use different port
+set PORT=3000 && npm run dev
+```
+
+#### **Node.js version issues:**
 ```bash
-# Check your Node.js version
+# Check your Node.js version (should be 20+)
 node --version
 
-# Should be 20.x.x or higher
+# Update Node.js if needed
+# Mac: brew upgrade node
+# PC: Download latest from nodejs.org
 ```
 
-**Permission errors on Mac:**
+#### **.NET SDK not found:**
+```bash
+# Verify .NET installation
+dotnet --version
+
+# If not installed, download from:
+# https://dotnet.microsoft.com/download/dotnet/8.0
+```
+
+#### **Permission errors on Mac:**
 ```bash
 # Fix npm permissions
 sudo chown -R $(whoami) ~/.npm
+
+# Alternative: Use Node Version Manager (nvm)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 20
+nvm use 20
 ```
 
-**TypeScript errors:**
+#### **Docker issues:**
 ```bash
-# Clear node_modules and reinstall
+# Verify Docker is running
+docker --version
+
+# Start Docker Desktop if needed
+# Mac: Open Docker Desktop app
+# PC: Start Docker Desktop from Start menu
+```
+
+#### **TypeScript/Build errors:**
+```bash
+# Clear cache and reinstall
 rm -rf node_modules package-lock.json
 npm install
+
+# Clear TypeScript cache
+npx tsc --build --clean
+
+# Restart development server
+npm run dev
+```
+
+#### **XTractFlow API connection issues:**
+```bash
+# Check API configuration in .env file
+cat .env
+
+# Test API connectivity
+curl -X GET "https://your-xtractflow-endpoint.com/health"
+
+# Verify API key format and permissions
+```
+
+### Platform-Specific Notes
+
+#### **Windows WSL Users:**
+```bash
+# If using Windows Subsystem for Linux
+# Install Node.js inside WSL, not Windows
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Clone and run project inside WSL
+git clone <repo-url>
+cd nutrient-bol-processor
+npm install
+npm run dev
+```
+
+#### **Mac M1/M2 Users:**
+```bash
+# If experiencing compatibility issues
+# Use Rosetta for Node.js compatibility
+arch -x86_64 npm install
+arch -x86_64 npm run dev
 ```
 
 ### Development Tips
