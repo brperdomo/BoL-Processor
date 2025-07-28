@@ -7,17 +7,17 @@
 │                           NUTRIENT BOL PROCESSOR                                │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
-    USER UPLOADS                 PROCESSING ORCHESTRATION              AI EXTRACTION
-         ▼                                ▼                                 ▼
+    USER UPLOADS              WORKFLOW ORCHESTRATION               DOCUMENT PROCESSING
+         ▼                            ▼                                 ▼
 
 ┌─────────────────┐           ┌──────────────────────┐           ┌─────────────────────┐
 │                 │           │                      │           │                     │
-│  REACT FRONTEND │  ────────►│   NODE.JS BACKEND    │  ────────►│  XTRACTFLOW SERVICE │
-│                 │           │                      │           │                     │
-│ • File Upload   │           │ • REST API           │           │ • Nutrient SDK      │
-│ • Status Tabs   │           │ • Document Storage   │           │ • AI Processing     │
-│ • Data Display  │           │ • XTractFlow Client  │           │ • LLM Integration   │
-│                 │           │                      │           │                     │
+│  REACT FRONTEND │  ────────►│ NODE.JS ORCHESTRATOR │  ────────►│  .NET XTRACTFLOW    │
+│                 │           │                      │           │      SERVICE        │
+│ • File Upload   │           │ • Frontend Hosting   │           │                     │
+│ • Status Tabs   │           │ • Document Storage   │           │ • Nutrient SDK      │
+│ • Data Display  │           │ • Status Management  │           │ • AI Processing     │
+│                 │           │ • XTractFlow Proxy   │           │ • LLM Integration   │
 └─────────────────┘           └──────────────────────┘           └─────────────────────┘
          ▲                                ▲                                 │
          │                                │                                 ▼
@@ -42,7 +42,7 @@
 ## Key Technical Points to Highlight
 
 **FRONTEND**: React + TypeScript with real-time updates
-**BACKEND**: Node.js Express orchestrating the workflow  
-**XTRACTFLOW**: Production .NET 8 service with actual Nutrient SDK
+**ORCHESTRATOR**: Node.js Express coordinating workflow (Port 5000)  
+**PROCESSING ENGINE**: .NET 8 XTractFlow service with Nutrient SDK (Port 8080)
 **AI**: OpenAI or Azure OpenAI for intelligent field extraction
 **OUTPUT**: Structured JSON ready for WMS/ERP/TMS integration

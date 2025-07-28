@@ -10,7 +10,7 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-The application follows a modern full-stack architecture with clear separation between frontend and backend:
+The application follows a modern dual-service architecture with clear separation of concerns:
 
 ### Frontend Architecture
 - **Framework**: React 18 with TypeScript
@@ -21,12 +21,21 @@ The application follows a modern full-stack architecture with clear separation b
 - **Routing**: Wouter for lightweight client-side routing
 - **File Uploads**: React Dropzone for drag-and-drop file upload functionality
 
-### Backend Architecture
+### Backend Architecture (Dual-Service Design)
+
+**Node.js Orchestrator Service (Port 5000)**
 - **Runtime**: Node.js with Express.js server
 - **Language**: TypeScript with ES modules
-- **API Pattern**: RESTful API with JSON responses
+- **Role**: Frontend hosting, workflow coordination, document state management
 - **File Handling**: Multer for multipart file upload processing
-- **Mock AI Processing**: Simulated document processing with different outcomes
+- **API Pattern**: RESTful API acting as proxy to XTractFlow service
+
+**.NET XTractFlow Processing Service (Port 8080)**
+- **Runtime**: .NET 8 with ASP.NET Core Minimal API
+- **Language**: C# with Nutrient SDK integration
+- **Role**: Pure document processing with actual XTractFlow SDK
+- **AI Processing**: Real Nutrient GdPicture.XtractFlow integration
+- **LLM Integration**: OpenAI and Azure OpenAI provider support
 
 ## Key Components
 
@@ -41,10 +50,18 @@ The application follows a modern full-stack architecture with clear separation b
 4. **UI Components**: Complete set of shadcn/ui components for consistent design
 
 ### Backend Components
+
+**Node.js Orchestrator Components**
 1. **Document Storage**: In-memory storage implementation with interface for future database integration
 2. **File Upload Handler**: Multer-based file processing with type validation
-3. **Mock AI Service**: Simulates Nutrient AI processing with various outcomes
-4. **REST API**: CRUD operations for document management
+3. **XTractFlow Client**: HTTP client for communicating with .NET service
+4. **REST API**: CRUD operations for document management and status tracking
+
+**.NET XTractFlow Service Components**
+1. **Nutrient SDK Integration**: Direct GdPicture.XtractFlow API usage
+2. **LLM Provider Management**: OpenAI and Azure OpenAI configuration
+3. **BOL Processing Engine**: Specialized component for Bill of Lading extraction
+4. **Document Classification**: AI-powered document type identification
 
 ## Data Flow
 

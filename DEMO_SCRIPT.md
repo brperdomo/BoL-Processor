@@ -13,15 +13,15 @@
 > "Today I'm demonstrating the Nutrient BOL Processor - a production-ready application that leverages Nutrient's XTractFlow SDK for intelligent document processing. This isn't just another demo app - it's a complete integration showing how XTractFlow transforms raw BOL documents into structured, actionable data for logistics systems."
 
 ### Architecture Walkthrough
-> "Let me show you the technical architecture behind this integration. We have three key components:"
+> "Let me show you the technical architecture behind this integration. We have a sophisticated dual-service design:"
 
-**[Screen: Show ARCHITECTURE_DIAGRAM.md - visual overview section]**
+**[Screen: Show SIMPLE_ARCHITECTURE_VISUAL.md]**
 
 > "First, our **React frontend** built with TypeScript and Vite - this handles file uploads, user interactions, and real-time status updates. Users can drag and drop BOL documents in multiple formats: PDFs, JPEGs, PNGs, and TIFFs."
 
-> "Second, our **Node.js Express backend** - this orchestrates the workflow, manages document state, and provides the REST API that connects everything together."
+> "Second, our **Node.js orchestrator** running on port 5000 - this coordinates the entire workflow. It hosts the frontend, manages document state, and acts as a smart proxy between the user interface and our processing engine."
 
-> "And third - the star of the show - our **XTractFlow .NET service**. This is where the real magic happens. It's a production-grade .NET 8 application that integrates directly with Nutrient's GdPicture.XtractFlow SDK."
+> "And third - the star of the show - our **dedicated .NET XTractFlow service** running on port 8080. This is where the real magic happens. It's a production-grade .NET 8 application that integrates directly with Nutrient's GdPicture.XtractFlow SDK and handles all the heavy AI processing."
 
 ---
 
@@ -90,15 +90,17 @@ npm run dev
 > "3. The XTractFlow service receives the binary data and processes it through the Nutrient SDK"
 
 ### XTractFlow Processing Deep-Dive
-> "Now here's what's happening inside XTractFlow - this is the technical magic:"
+> "Now here's what's happening inside our dedicated .NET XTractFlow service - this is the technical magic:"
 
 **[Screen: Show XTractFlow service logs or API response]**
+
+> "The Node.js orchestrator receives the uploaded file and immediately forwards it to our .NET service via HTTP. Once the .NET service receives the document, several sophisticated processes happen:"
 
 > "First, XTractFlow performs **document classification** - it determines if this is actually a BOL document or something else. This prevents processing irrelevant documents."
 
 > "Next, it applies **computer vision and OCR** to extract all text from the document, handling various image qualities, rotations, and formats."
 
-> "Then comes the **AI-powered field extraction**. XTractFlow uses the configured LLM with specialized BOL processing instructions to identify and extract specific fields:"
+> "Then comes the **AI-powered field extraction**. The .NET service uses the configured LLM with specialized BOL processing instructions to identify and extract specific fields:"
 
 - **BOL Number**: Unique identifier for the shipment
 - **Shipper Information**: Company name, address, contact details  
