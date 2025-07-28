@@ -15,7 +15,7 @@
 ### Architecture Walkthrough
 > "Let me show you the technical architecture behind this integration. We have three key components:"
 
-**[Screen: Show architecture diagram or project structure]**
+**[Screen: Show ARCHITECTURE_DIAGRAM.md - visual overview section]**
 
 > "First, our **React frontend** built with TypeScript and Vite - this handles file uploads, user interactions, and real-time status updates. Users can drag and drop BOL documents in multiple formats: PDFs, JPEGs, PNGs, and TIFFs."
 
