@@ -108,9 +108,15 @@ function ProcessedCard({ document }: { document: Document }) {
                   <Badge className="bg-nutrient-secondary bg-opacity-20 text-nutrient-secondary hover:bg-nutrient-secondary hover:bg-opacity-30">
                     Processed
                   </Badge>
-                  <span className="text-xs text-nutrient-text-secondary">
-                    BOL: {extractedData?.bolNumber || 'N/A'}
-                  </span>
+                  {extractedData?.documentType === 'multi_bol' ? (
+                    <span className="text-xs text-nutrient-text-secondary">
+                      Multi-BOL: {extractedData?.totalBOLs || 0} BOLs • {(document.fileSize / 1024).toFixed(1)} KB
+                    </span>
+                  ) : (
+                    <span className="text-xs text-nutrient-text-secondary">
+                      BOL: {extractedData?.bolNumber || 'N/A'}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -141,22 +147,56 @@ function ProcessedCard({ document }: { document: Document }) {
             <div className="space-y-4">
               <h5 className="font-medium text-nutrient-text mb-3">Key Information</h5>
               <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-nutrient-text-secondary">BOL Number:</span>
-                  <span className="text-nutrient-text font-mono">{extractedData?.bolNumber || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-nutrient-text-secondary">Carrier:</span>
-                  <span className="text-nutrient-text">{extractedData?.carrier?.name || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-nutrient-text-secondary">Ship Date:</span>
-                  <span className="text-nutrient-text">{extractedData?.shipDate || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-nutrient-text-secondary">Total Weight:</span>
-                  <span className="text-nutrient-text">{extractedData?.totalWeight ? `${extractedData.totalWeight.toLocaleString()} lbs` : 'N/A'}</span>
-                </div>
+                {extractedData?.documentType === 'multi_bol' ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-nutrient-text-secondary">Document Type:</span>
+                      <span className="text-nutrient-text font-semibold">Multi-BOL Document</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-nutrient-text-secondary">Total BOLs:</span>
+                      <span className="text-nutrient-text font-mono">{extractedData?.totalBOLs || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-nutrient-text-secondary">File Size:</span>
+                      <span className="text-nutrient-text">{(document.fileSize / 1024).toFixed(1)} KB</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-nutrient-text-secondary">Primary BOL:</span>
+                      <span className="text-nutrient-text font-mono">{extractedData?.bolNumber || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-nutrient-text-secondary">Total Weight (All BOLs):</span>
+                      <span className="text-nutrient-text">
+                        {extractedData?.totalWeight && extractedData?.additionalBOLs 
+                          ? `${(extractedData.totalWeight + extractedData.additionalBOLs.reduce((sum, bol) => sum + (bol.totalWeight || 0), 0)).toLocaleString()} lbs`
+                          : extractedData?.totalWeight 
+                            ? `${extractedData.totalWeight.toLocaleString()} lbs`
+                            : 'N/A'
+                        }
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-nutrient-text-secondary">BOL Number:</span>
+                      <span className="text-nutrient-text font-mono">{extractedData?.bolNumber || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-nutrient-text-secondary">Carrier:</span>
+                      <span className="text-nutrient-text">{extractedData?.carrier?.name || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-nutrient-text-secondary">Ship Date:</span>
+                      <span className="text-nutrient-text">{extractedData?.shipDate || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-nutrient-text-secondary">Total Weight:</span>
+                      <span className="text-nutrient-text">{extractedData?.totalWeight ? `${extractedData.totalWeight.toLocaleString()} lbs` : 'N/A'}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             
