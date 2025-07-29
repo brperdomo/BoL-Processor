@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx vite build --outDir public",
+  "buildCommand": "npx vite build --outDir ../public",
   "outputDirectory": "public", 
   "installCommand": "npm ci",
   "rewrites": [

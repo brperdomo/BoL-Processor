@@ -15,7 +15,7 @@ Build Command: npx vite build --outDir ./public
 
 **✅ CORRECT (what you need):**
 ```
-Build Command: npx vite build --outDir public
+Build Command: npx vite build --outDir ../public
 ```
 
 **The issue:** The `./` prefix is breaking the path resolution on Vercel's build system.
@@ -25,7 +25,7 @@ Build Command: npx vite build --outDir public
 Copy these exactly:
 
 - **Framework Preset**: `Other`
-- **Build Command**: `npx vite build --outDir public`
+- **Build Command**: `npx vite build --outDir ../public`
 - **Output Directory**: `public`
 - **Install Command**: `npm ci`
 
@@ -45,7 +45,7 @@ The build creates a perfect `public` directory with all files.
 ## 🔧 **Next Steps**
 
 1. Go to your Vercel project settings
-2. Change **Build Command** from `./public` to just `public` 
+2. Change **Build Command** to `npx vite build --outDir ../public`
 3. Click "Redeploy"
 4. It will work immediately
 
