@@ -1,13 +1,53 @@
-import { FileText, Download, Eye, Copy } from "lucide-react";
+import { FileText, Download, Eye, Copy, FileSpreadsheet, FileX, Database } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import type { Document, BOLData } from "@shared/schema";
 
 interface ProcessedTabProps {
   documents: Document[];
 }
+
+// Helper function for bulk export
+const handleBulkExport = async (format: 'json' | 'csv' | 'excel' | 'xml', toast: any) => {
+  try {
+    const response = await fetch(`/api/documents/export/${format}`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        toast({
+          title: "No Data Available",
+          description: "No processed documents found for export",
+          variant: "destructive"
+        });
+        return;
+      }
+      throw new Error('Export failed');
+    }
+    
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `bol_export.${format}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export Complete",
+      description: `BOL data exported as ${format.toUpperCase()}`,
+    });
+  } catch (error) {
+    toast({
+      title: "Export Failed",
+      description: `Could not export BOL data as ${format.toUpperCase()}`,
+      variant: "destructive"
+    });
+  }
+};
 
 function ProcessedCard({ document }: { document: Document }) {
   const { toast } = useToast();
@@ -208,29 +248,39 @@ function ProcessedCard({ document }: { document: Document }) {
 export default function ProcessedTab({ documents }: ProcessedTabProps) {
   const { toast } = useToast();
 
-  const handleBulkExport = async () => {
+  const handleBulkExport = async (format: 'json' | 'csv' | 'excel' | 'xml') => {
     try {
-      const response = await fetch('/api/documents/export/json');
-      if (!response.ok) throw new Error('Bulk export failed');
+      const response = await fetch(`/api/documents/export/${format}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          toast({
+            title: "No Data Available",
+            description: "No processed documents found for export",
+            variant: "destructive"
+          });
+          return;
+        }
+        throw new Error('Export failed');
+      }
       
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'bol_export.json';
+      a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `bol_export.${format}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
       toast({
-        title: "Bulk Export Complete",
-        description: `Exported ${documents.length} documents to JSON`,
+        title: "Export Complete",
+        description: `Exported ${documents.length} documents as ${format.toUpperCase()}`,
       });
     } catch (error) {
       toast({
         title: "Export Failed",
-        description: "Could not export all documents",
+        description: `Could not export documents as ${format.toUpperCase()}`,
         variant: "destructive"
       });
     }
@@ -256,13 +306,44 @@ export default function ProcessedTab({ documents }: ProcessedTabProps) {
           <h3 className="text-lg font-semibold text-nutrient-text">Processed Documents</h3>
           <p className="text-sm text-nutrient-text-secondary">{documents.length} documents ready for ERP/WMS integration</p>
         </div>
-        <Button
-          onClick={handleBulkExport}
-          className="bg-nutrient-primary hover:bg-nutrient-primary/90 text-white"
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Export All JSON
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="bg-nutrient-primary hover:bg-nutrient-primary/90 text-white">
+              <Download className="w-4 h-4 mr-2" />
+              Export All
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-nutrient-card border-slate-600">
+            <DropdownMenuItem 
+              onClick={() => handleBulkExport('json')}
+              className="hover:bg-slate-700 text-nutrient-text"
+            >
+              <Database className="w-4 h-4 mr-2" />
+              Export as JSON
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleBulkExport('csv')}
+              className="hover:bg-slate-700 text-nutrient-text"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleBulkExport('excel')}
+              className="hover:bg-slate-700 text-nutrient-text"
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Export as Excel
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleBulkExport('xml')}
+              className="hover:bg-slate-700 text-nutrient-text"
+            >
+              <FileX className="w-4 h-4 mr-2" />
+              Export as XML
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       
       {/* Documents List */}
