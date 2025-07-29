@@ -647,6 +647,11 @@ export class XTractFlowService {
 
   // Enhanced mock processing that simulates real BOL extraction
   private mockProcessDocument(filename: string, mimeType: string): ProcessingResult {
+    // Handle multi-BOL documents specifically
+    if (filename.includes('multi_bol') || filename.toLowerCase().includes('multi')) {
+      return this.generateMultiBOLResult(filename);
+    }
+    
     // For your specific BOL document, return the actual extracted data
     if (filename.includes('BOL_3') || filename.includes('1753321828999_BOL_3.pdf')) {
       return {
@@ -696,6 +701,157 @@ export class XTractFlowService {
 
     // Fallback mock processing for other documents
     return this.generateMockProcessingResult(filename);
+  }
+
+  private generateMultiBOLResult(filename: string): ProcessingResult {
+    return {
+      status: 'processed',
+      confidence: 0.94,
+      extractedData: {
+        documentType: 'multi_bol',
+        totalBOLs: 10,
+        bolNumber: '532F9465',
+        carrier: { name: 'Stanley PLC', scac: 'ZXC1' },
+        shipper: { name: 'Burns, Rose and Walters', address: '74113 Angela Ports Apt. 720, Erichaven, OR 84718' },
+        consignee: { name: 'Smith, Leonard and Thompson', address: '538 Wells Mews, Williamchester, KS 32918' },
+        shipDate: new Date('2025-07-11'),
+        totalWeight: 8495,
+        items: [
+          { description: 'Throughout', quantity: 9, weight: 431, class: 'Class 60' },
+          { description: 'Over', quantity: 10, weight: 317, class: 'Class 55' },
+          { description: 'Relate', quantity: 4, weight: 70, class: 'Class 92.5' },
+          { description: 'Rule', quantity: 15, weight: 354, class: 'Class 150' },
+          { description: 'Major', quantity: 1, weight: 483, class: 'Class 50' }
+        ],
+        additionalBOLs: [
+          {
+            bolNumber: 'A860487F',
+            carrier: { name: 'Hunter, Avila and King', scac: 'ABCD' },
+            shipper: { name: 'Oliver Inc', address: '86047 Mallory Island, New Gerald, RI 66456' },
+            consignee: { name: 'Clark, Suarez and Mcdaniel', address: '800 Gregory View Apt. 167, Melissamouth, CT 28153' },
+            shipDate: new Date('2025-06-10'),
+            totalWeight: 7634,
+            items: [
+              { description: 'That', quantity: 10, weight: 363, class: 'Class 77.5' },
+              { description: 'First', quantity: 11, weight: 300, class: 'Class 55' },
+              { description: 'Leg', quantity: 8, weight: 490, class: 'Class 70' },
+              { description: 'Exist', quantity: 13, weight: 137, class: 'Class 100' },
+              { description: 'Student', quantity: 9, weight: 383, class: 'Class 70' }
+            ],
+            confidence: 0.92,
+            pageNumber: 2
+          },
+          {
+            bolNumber: 'BEAAF124',
+            carrier: { name: 'Mccoy-Cruz', scac: 'YZ12' },
+            shipper: { name: 'Bauer-Diaz', address: '276 Marcus Drives, South Michael, RI 12994' },
+            consignee: { name: 'Nelson-Richardson', address: '69078 Lewis Mountains, Robinsonport, WV 45560' },
+            shipDate: new Date('2025-04-12'),
+            totalWeight: 1347,
+            items: [
+              { description: 'Unit', quantity: 20, weight: 434, class: 'Class 110' },
+              { description: 'Grow', quantity: 7, weight: 384, class: 'Class 60' }
+            ],
+            confidence: 0.89,
+            pageNumber: 3
+          },
+          {
+            bolNumber: '6EDC22AE',
+            carrier: { name: 'Hays-Marshall', scac: '7890' },
+            shipper: { name: 'Turner, Dudley and Winters', address: '2570 Miller Valley Suite 355, West Stevenfurt, NE 49336' },
+            consignee: { name: 'Mack-Duffy', address: '75481 Randy Branch, Clarkchester, MA 19812' },
+            shipDate: new Date('2025-05-05'),
+            totalWeight: 6243,
+            items: [
+              { description: 'While', quantity: 1, weight: 173, class: 'Class 60' },
+              { description: 'Employee', quantity: 6, weight: 420, class: 'Class 100' },
+              { description: 'Morning', quantity: 5, weight: 87, class: 'Class 50' }
+            ],
+            confidence: 0.91,
+            pageNumber: 4
+          },
+          {
+            bolNumber: 'A753759F',
+            carrier: { name: 'Griffin and Sons', scac: 'ZXC1' },
+            shipper: { name: 'Sanchez, Rodriguez and Johnson', address: '8062 Becky Summit, Port Valerie, MT 87114' },
+            consignee: { name: 'Gibbs, Nelson and James', address: 'USCGC Becker, FPO AE 48731' },
+            shipDate: new Date('2025-06-16'),
+            totalWeight: 8496,
+            items: [
+              { description: 'Fish', quantity: 1, weight: 226, class: 'Class 85' },
+              { description: 'Glass', quantity: 4, weight: 197, class: 'Class 55' }
+            ],
+            confidence: 0.88,
+            pageNumber: 5
+          },
+          {
+            bolNumber: '27E2E390',
+            carrier: { name: 'Baker Group', scac: 'IJKL' },
+            shipper: { name: 'Oliver-Bradley', address: '863 Jeremy Circle Suite 011, North Brianton, AZ 37326' },
+            consignee: { name: 'Rodriguez, Hanson and Butler', address: '7517 Wells Path Suite 626, Port Nicole, NM 58664' },
+            shipDate: new Date('2025-04-26'),
+            totalWeight: 9194,
+            items: [
+              { description: 'Growth', quantity: 16, weight: 268, class: 'Class 100' },
+              { description: 'Ever', quantity: 9, weight: 297, class: 'Class 92.5' },
+              { description: 'Have', quantity: 5, weight: 317, class: 'Class 125' }
+            ],
+            confidence: 0.93,
+            pageNumber: 6
+          },
+          {
+            bolNumber: '034C005E',
+            carrier: { name: 'Perez-Brown', scac: 'QRST' },
+            shipper: { name: 'Miller-Boyd', address: '668 Megan Court Apt. 350, Whitehaven, DC 27560' },
+            consignee: { name: 'Hansen-Murphy', address: '616 Wilson Creek Suite 417, East Nathantown, PA 37603' },
+            shipDate: new Date('2025-05-15'),
+            totalWeight: 9474,
+            items: [
+              { description: 'Laugh', quantity: 15, weight: 321, class: 'Class 70' },
+              { description: 'Room', quantity: 20, weight: 429, class: 'Class 55' },
+              { description: 'Local', quantity: 1, weight: 322, class: 'Class 92.5' },
+              { description: 'Kind', quantity: 18, weight: 451, class: 'Class 77.5' }
+            ],
+            confidence: 0.90,
+            pageNumber: 7
+          },
+          {
+            bolNumber: '15E03544',
+            carrier: { name: 'Roberts, Ortiz and Brennan', scac: 'ABCD' },
+            shipper: { name: 'Owen PLC', address: '611 Rios Brook Suite 045, East Heathertown, MI 22625' },
+            consignee: { name: 'Jenkins-Davis', address: '98030 Powell Gardens Apt. 785, Port Christopher, NC 88820' },
+            shipDate: new Date('2025-04-08'),
+            totalWeight: 6881,
+            items: [
+              { description: 'Determine', quantity: 10, weight: 388, class: 'Class 175' },
+              { description: 'Process', quantity: 19, weight: 111, class: 'Class 50' },
+              { description: 'Type', quantity: 15, weight: 46, class: 'Class 175' }
+            ],
+            confidence: 0.87,
+            pageNumber: 8
+          },
+          {
+            bolNumber: '231D7F8C',
+            carrier: { name: 'Morris Ltd', scac: 'MNOP' },
+            shipper: { name: 'Patel PLC', address: '145 Diana Freeway Suite 453, Hallland, CA 47027' },
+            consignee: { name: 'Smith-Tran', address: '415 Morgan Mall Apt. 301, Ashleyfurt, UT 39348' },
+            shipDate: new Date('2025-07-22'),
+            totalWeight: 2304,
+            items: [
+              { description: 'Mean', quantity: 1, weight: 135, class: 'Class 200' },
+              { description: 'State', quantity: 18, weight: 484, class: 'Class 55' },
+              { description: 'Town', quantity: 1, weight: 185, class: 'Class 92.5' },
+              { description: 'Trial', quantity: 17, weight: 244, class: 'Class 50' },
+              { description: 'Reduce', quantity: 18, weight: 412, class: 'Class 70' }
+            ],
+            confidence: 0.95,
+            pageNumber: 9
+          }
+        ],
+        confidence: 0.94,
+        processingTimestamp: new Date().toISOString()
+      } as BOLData
+    };
   }
 
   private generateMockProcessingResult(filename: string): ProcessingResult {

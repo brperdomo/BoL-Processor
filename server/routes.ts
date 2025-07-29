@@ -381,8 +381,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Helper function to get flattened export data for CSV/Excel/XML
-  const getFlattenedExportData = () => {
-    const processedDocs = storage.getDocuments().filter(doc => doc.status === 'processed');
+  const getFlattenedExportData = async () => {
+    const allDocs = await storage.getAllDocuments();
+    const processedDocs = allDocs.filter(doc => doc.status === 'processed');
     
     return processedDocs.flatMap(doc => {
       const bolData = doc.extractedData as any;
@@ -451,7 +452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/documents/export/csv', async (req, res) => {
     try {
       const createCsvWriter = (await import('csv-writer')).createObjectCsvWriter;
-      const data = getFlattenedExportData();
+      const data = await getFlattenedExportData();
       
       if (data.length === 0) {
         return res.status(404).json({ message: 'No processed documents available for export' });
@@ -499,7 +500,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/documents/export/excel', async (req, res) => {
     try {
       const XLSX = await import('xlsx');
-      const data = getFlattenedExportData();
+      const data = await getFlattenedExportData();
       
       if (data.length === 0) {
         return res.status(404).json({ message: 'No processed documents available for export' });
@@ -554,7 +555,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/documents/export/xml', async (req, res) => {
     try {
       const xml2js = await import('xml2js');
-      const data = getFlattenedExportData();
+      const data = await getFlattenedExportData();
       
       if (data.length === 0) {
         return res.status(404).json({ message: 'No processed documents available for export' });
