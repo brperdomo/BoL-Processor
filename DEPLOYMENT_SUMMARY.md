@@ -27,8 +27,8 @@ git push -u origin main
 # - Go to vercel.com
 # - Connect GitHub repository
 # - Set Framework: Vite
-# - Build Command: vite build
-# - Output Directory: dist/public
+# - Build Command: npx vite build --outDir public
+# - Output Directory: public
 # - Click Deploy
 ```
 

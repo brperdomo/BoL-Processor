@@ -21,9 +21,9 @@ git push -u origin main
 3. Click "New Project" → Select your repository
 4. Configure these build settings:
    - **Framework Preset**: `Vite`
-   - **Build Command**: `vite build`
-   - **Output Directory**: `dist/public`
-   - **Install Command**: `npm install`
+   - **Build Command**: `npx vite build --outDir public`
+   - **Output Directory**: `public`
+   - **Install Command**: `npm ci`
 5. Click "Deploy"
 
 ## 📁 **What's Fixed**
@@ -55,6 +55,12 @@ If you see `__require` errors or "Dynamic require not supported":
 2. ✅ **Fixed**: Separated client build from server code completely
 3. ✅ **Fixed**: Added proper build configuration to avoid bundling conflicts
 4. Push the latest changes and redeploy
+
+### **Output Directory Error:**
+If you see "No Output Directory named 'public' found":
+1. ✅ **Fixed**: Updated build to output directly to `public` folder
+2. ✅ **Fixed**: Simplified path structure for Vercel compatibility
+3. Push the latest changes and redeploy
 
 ### **Other Build Errors:**
 If you still see issues:
