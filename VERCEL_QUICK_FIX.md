@@ -47,9 +47,16 @@ After deployment, you'll have:
 - ✅ **Demo Mode** - Mock BOL processing for presentations
 - ✅ **Professional URL** - Ready for internal testing and stakeholder demos
 
-## 🔧 **If Issues Persist**
+## 🔧 **Common Issues & Fixes**
 
-If you still see build errors:
+### **Node.js Version Error:**
+If you see "Found invalid Node.js Version: 22.x":
+1. ✅ **Fixed**: Added `.nvmrc` file with Node 18
+2. ✅ **Fixed**: Updated `vercel.json` to use `nodejs18.x` runtime
+3. Push the latest changes and redeploy
+
+### **Other Build Errors:**
+If you still see issues:
 1. Ensure **Framework Preset** is set to "Vite" (not "Other")
 2. Verify **Output Directory** is exactly `dist/public`
 3. Check that your repository has the latest `.gitignore` changes
