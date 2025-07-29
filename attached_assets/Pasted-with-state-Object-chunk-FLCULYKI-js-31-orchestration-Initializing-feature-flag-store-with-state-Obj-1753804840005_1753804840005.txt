@@ -1,0 +1,112 @@
+with state Object
+chunk-FLCULYKI.js:31 orchestration: Initializing feature flag store with state Object
+chunk-FLCULYKI.js:31 orchestration: Initializing user store with state Object
+chunk-FLCULYKI.js:31 orchestration: Updating combined state Object
+16Fetch finished loading: GET "<URL>".
+Navigated to https://bol-processor.vercel.app/
+chunk-FLCULYKI.js:31 orchestration: Initializing config store with state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}
+chunk-FLCULYKI.js:31 orchestration: Initializing feature flag store with state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}
+chunk-FLCULYKI.js:31 orchestration: Initializing user store with state {}
+chunk-FLCULYKI.js:31 orchestration: Updating combined state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}
+29Fetch finished loading: GET "<URL>".
+index-BlGU41nP.js:202 Failed to load config: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+g @ index-BlGU41nP.js:202
+await in g
+(anonymous) @ index-BlGU41nP.js:202
+$a @ index-BlGU41nP.js:40
+Gr @ index-BlGU41nP.js:40
+Vw @ index-BlGU41nP.js:40
+er @ index-BlGU41nP.js:40
+tf @ index-BlGU41nP.js:40
+Xn @ index-BlGU41nP.js:38
+(anonymous) @ index-BlGU41nP.js:40Understand this error
+bol-processor.vercel.app/:1 [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) <input type=​"password" class=​"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:​border-0 file:​bg-transparent file:​text-sm file:​font-medium file:​text-foreground placeholder:​text-muted-foreground focus-visible:​outline-none focus-visible:​ring-2 focus-visible:​ring-ring focus-visible:​ring-offset-2 disabled:​cursor-not-allowed disabled:​opacity-50 md:​text-sm pr-10" id=​"apiKey" placeholder=​"Your XTractFlow API key" value=​"IHj5EOuuDMQUPtj_rvgvggez5Bv2sSZoesOcNFWat7JYNjVT1MebFZgbJUiTvAn0qfZhzBWrdX5JrHfoVNeyWbU4H_0i0xIVlnz7sQCQ0QXRBktBR03YDADF7VALCnnByfaQ8ajiJSOKIJ6S34CjjDSAFH4TH-RkE3w4pIM9PM9iYocN1O5Xf4_bTwFDni27IUzrwtFX5meomt8vvXtTL59Thl_WzwgabGNyJEVceNesfNiW8rVr3EnvVdW5FgYFom5iZFdVyBUjXsQna6Ez9RFx1MT_yfCOSulIyz8tBrTEg5N6N1inty5qvZt2ee8BtRGN85uB2Lgusx0YXD8c7G4DwjLHPVsbu3OshZMFBA7fUBAPZPritWhYRxhqTx8BljcsUrMDKHESETe9CDnEy4b9zZPbgFDZtz_mC5p2LaxNWtXxsIejT7oL5KyCE4mnggOJe_nL1REp9FY0z-rSiuwWT86_p4MKEvskhuPTs-jAiPRG4l_hsuFY_iE9SkkzIF29z3tFuvjXeelI-olf-XYIAQgpdaFnh0sQgymGE-Oh0zcaxGWuOhS_d7gJRmgaPut4Jv0ub8qace24qlFm7oUfJbsXUC10Owchcqf2Wd7o1tlfj9-090-jazF7F5NKOZwTpvKb2UBQ_DO9GguCE30rGzcSZj1MSfUFvGRcFLI25rBftrIajTAaRwP-YSERlDTew7jws87rY9mDM9hEsqmeC02mrK_nQ9I4BI7Hw-g=">​flex
+chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/chunks/chunk-UVKO6OCU.js:6 [Violation] Added non-passive event listener to a scroll-blocking 'wheel' event. Consider marking event handler as 'passive' to make the page more responsive. See https://www.chromestatus.com/feature/5745543795965952
+re @ chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/chunks/chunk-UVKO6OCU.js:6
+m @ chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/inline/menu/menu.js:101
+ge @ chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/chunks/chunk-UVKO6OCU.js:6
+m @ chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/inline/menu/menu.js:101
+ge @ chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/chunks/chunk-UVKO6OCU.js:6
+m @ chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/inline/menu/menu.js:101
+p @ chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/inline/menu/menu.js:101
+pe @ chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/chunks/chunk-UVKO6OCU.js:6
+Y @ chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/chunks/chunk-UVKO6OCU.js:6
+index-BlGU41nP.js:202  POST https://bol-processor.vercel.app/api/xtractflow/config 405 (Method Not Allowed)
+v @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37Understand this error
+index-BlGU41nP.js:202 Fetch failed loading: POST "https://bol-processor.vercel.app/api/xtractflow/config".
+v @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37
+index-BlGU41nP.js:202  POST https://bol-processor.vercel.app/api/xtractflow/test 405 (Method Not Allowed)
+w @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37Understand this error
+index-BlGU41nP.js:202 Fetch failed loading: POST "https://bol-processor.vercel.app/api/xtractflow/test".
+w @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37
+index-BlGU41nP.js:202  POST https://bol-processor.vercel.app/api/xtractflow/config 405 (Method Not Allowed)
+v @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37Understand this error
+index-BlGU41nP.js:202 Fetch failed loading: POST "https://bol-processor.vercel.app/api/xtractflow/config".
+v @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37
+injected.js:5 Caught error handling <hide-notification> message
