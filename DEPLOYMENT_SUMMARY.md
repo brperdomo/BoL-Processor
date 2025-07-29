@@ -26,8 +26,8 @@ git push -u origin main
 # 2. Deploy on Vercel
 # - Go to vercel.com
 # - Connect GitHub repository
-# - Set Framework: Vite
-# - Build Command: npx vite build --outDir public
+# - Set Framework: Other
+# - Build Command: cd client && npx vite build --outDir ../public
 # - Output Directory: public
 # - Click Deploy
 ```
