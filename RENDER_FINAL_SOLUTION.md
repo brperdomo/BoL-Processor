@@ -11,11 +11,16 @@ The build failure occurs because Render automatically sets `NODE_ENV=production`
 NODE_ENV=development npm ci && npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 ```
 
+### **Code Fix Applied:**
+- **Port Binding**: Updated server to bind to `0.0.0.0` in production for external access
+- **Development**: Still uses `localhost` for local development
+
 ### **Why This Works:**
 1. **`NODE_ENV=development`** - Forces npm to install devDependencies during build
 2. **`npm ci`** - Clean install from lockfile (more reliable than npm install)
 3. **`npx vite build`** - Now finds vite because it was installed in step 1
 4. **`npx esbuild`** - Bundles the server code for production
+5. **`0.0.0.0` binding** - Allows Render to detect and access the application port
 
 ## **🔧 Render Dashboard Settings**
 
