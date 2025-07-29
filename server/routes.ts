@@ -455,45 +455,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Export as CSV
   app.get('/api/documents/export/csv', async (req, res) => {
     try {
-      const createCsvWriter = (await import('csv-writer')).createObjectCsvWriter;
       const data = await getFlattenedExportData();
       
       if (data.length === 0) {
         return res.status(404).json({ message: 'No processed documents available for export' });
       }
 
-      const csvWriter = createCsvWriter({
-        path: '',
-        header: [
-          { id: 'internal_id', title: 'Internal ID' },
-          { id: 'source_filename', title: 'Source Filename' },
-          { id: 'processed_date', title: 'Processed Date' },
-          { id: 'confidence_score', title: 'Confidence Score' },
-          { id: 'validation_status', title: 'Validation Status' },
-          { id: 'bol_sequence', title: 'BOL Sequence' },
-          { id: 'total_bols_in_document', title: 'Total BOLs in Document' },
-          { id: 'bol_number', title: 'BOL Number' },
-          { id: 'ship_date', title: 'Ship Date' },
-          { id: 'carrier_name', title: 'Carrier Name' },
-          { id: 'carrier_scac', title: 'Carrier SCAC' },
-          { id: 'shipper_name', title: 'Shipper Name' },
-          { id: 'shipper_address', title: 'Shipper Address' },
-          { id: 'consignee_name', title: 'Consignee Name' },
-          { id: 'consignee_address', title: 'Consignee Address' },
-          { id: 'total_weight_lbs', title: 'Total Weight (lbs)' },
-          { id: 'item_count', title: 'Item Count' },
-          { id: 'items_description', title: 'Items Description' },
-          { id: 'items_quantity', title: 'Items Quantity' },
-          { id: 'items_weight', title: 'Items Weight' },
-          { id: 'items_class', title: 'Items Class' }
-        ]
-      });
+      // Create CSV content manually
+      const headers = [
+        'Internal ID', 'Source Filename', 'Processed Date', 'Confidence Score', 'Validation Status',
+        'BOL Sequence', 'Total BOLs in Document', 'BOL Number', 'BOL Issuer', 'Ship Date', 
+        'Carrier Name', 'Carrier SCAC', 'Shipper Name', 'Shipper Address', 'Consignee Name', 
+        'Consignee Address', 'Total Weight (lbs)', 'Item Count', 'Items Description', 
+        'Items Quantity', 'Items Weight', 'Items Class'
+      ];
 
-      const csvString = await csvWriter.writeRecords(data);
+      const csvRows = [
+        headers.join(','),
+        ...data.map(row => [
+          row.internal_id, row.source_filename, row.processed_date, row.confidence_score,
+          row.validation_status, row.bol_sequence, row.total_bols_in_document, row.bol_number,
+          row.bol_issuer, row.ship_date, row.carrier_name, row.carrier_scac, row.shipper_name,
+          row.shipper_address, row.consignee_name, row.consignee_address, row.total_weight_lbs,
+          row.item_count, `"${row.items_description}"`, `"${row.items_quantity}"`, 
+          `"${row.items_weight}"`, `"${row.items_class}"`
+        ].join(','))
+      ];
+
+      const csvContent = csvRows.join('\n');
       
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="bol_export_${new Date().toISOString().split('T')[0]}.csv"`);
-      res.send(csvString);
+      res.send(csvContent);
     } catch (error) {
       console.error('CSV export error:', error);
       res.status(500).json({ message: 'Failed to generate CSV export' });

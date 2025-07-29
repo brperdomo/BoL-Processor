@@ -202,30 +202,70 @@ function ProcessedCard({ document }: { document: Document }) {
             
             {/* Addresses */}
             <div className="space-y-4">
-              <h5 className="font-medium text-nutrient-text mb-3">Addresses</h5>
+              <h5 className="font-medium text-nutrient-text mb-3">
+                {extractedData?.documentType === 'multi_bol' ? 'Summary Information' : 'Addresses'}
+              </h5>
               <div className="space-y-3">
-                <div>
-                  <span className="text-nutrient-text-secondary text-sm">Shipper:</span>
-                  <p className="text-nutrient-text text-sm mt-1">
-                    {extractedData?.shipper?.name && (
-                      <>
-                        {extractedData.shipper.name}<br />
-                        {extractedData.shipper.address}
-                      </>
-                    ) || 'N/A'}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-nutrient-text-secondary text-sm">Consignee:</span>
-                  <p className="text-nutrient-text text-sm mt-1">
-                    {extractedData?.consignee?.name && (
-                      <>
-                        {extractedData.consignee.name}<br />
-                        {extractedData.consignee.address}
-                      </>
-                    ) || 'N/A'}
-                  </p>
-                </div>
+                {extractedData?.documentType === 'multi_bol' ? (
+                  <>
+                    <div>
+                      <span className="text-nutrient-text-secondary text-sm">BOL Numbers:</span>
+                      <p className="text-nutrient-text text-sm mt-1 font-mono">
+                        {extractedData?.bolNumber}
+                        {extractedData?.additionalBOLs?.slice(0, 3).map((bol, idx) => (
+                          <span key={idx}>, {bol.bolNumber}</span>
+                        ))}
+                        {extractedData?.additionalBOLs && extractedData.additionalBOLs.length > 3 && 
+                          ` +${extractedData.additionalBOLs.length - 3} more`
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-nutrient-text-secondary text-sm">Carriers Involved:</span>
+                      <p className="text-nutrient-text text-sm mt-1">
+                        {extractedData?.carrier?.name}
+                        {extractedData?.additionalBOLs?.slice(0, 2).map((bol, idx) => (
+                          <span key={idx}>, {bol.carrier?.name || 'N/A'}</span>
+                        ))}
+                        {extractedData?.additionalBOLs && extractedData.additionalBOLs.length > 2 && 
+                          ` +${extractedData.additionalBOLs.length - 2} more`
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-nutrient-text-secondary text-sm">Total Items:</span>
+                      <p className="text-nutrient-text text-sm mt-1">
+                        {(extractedData?.items?.length || 0) + 
+                         (extractedData?.additionalBOLs?.reduce((sum, bol) => sum + (bol.items?.length || 0), 0) || 0)} items across all BOLs
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <span className="text-nutrient-text-secondary text-sm">Shipper:</span>
+                      <p className="text-nutrient-text text-sm mt-1">
+                        {extractedData?.shipper?.name && (
+                          <>
+                            {extractedData.shipper.name}<br />
+                            {extractedData.shipper.address}
+                          </>
+                        ) || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-nutrient-text-secondary text-sm">Consignee:</span>
+                      <p className="text-nutrient-text text-sm mt-1">
+                        {extractedData?.consignee?.name && (
+                          <>
+                            {extractedData.consignee.name}<br />
+                            {extractedData.consignee.address}
+                          </>
+                        ) || 'N/A'}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
