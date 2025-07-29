@@ -180,6 +180,11 @@ export class XTractFlowService {
                 format: "Text"
               },
               {
+                name: "bol_issuer",
+                semanticDescription: "The organization that issued this Bill of Lading, typically found in the document title or header (e.g., 'Company Name - Bill of Lading')",
+                format: "Text"
+              },
+              {
                 name: "carrier_name",
                 semanticDescription: "The transportation company responsible for moving the cargo",
                 format: "Text"
@@ -306,6 +311,7 @@ export class XTractFlowService {
       documentType: isMultiBOL ? 'multi_bol' : 'single_bol',
       totalBOLs: isMultiBOL ? bolNumbers.length : 1,
       bolNumber: this.getFieldValue(fieldMap.get('bol_number')),
+      bolIssuer: this.getFieldValue(fieldMap.get('bol_issuer')),
       carrier: {
         name: this.getFieldValue(fieldMap.get('carrier_name')),
         scac: this.getFieldValue(fieldMap.get('carrier_scac')),
@@ -708,6 +714,7 @@ export class XTractFlowService {
         documentType: 'multi_bol',
         totalBOLs: 10,
         bolNumber: '532F9465',
+        bolIssuer: 'Multi-Transport Logistics - Bill of Lading',
         carrier: { name: 'Stanley PLC', scac: 'ZXC1' },
         shipper: { name: 'Burns, Rose and Walters', address: '74113 Angela Ports Apt. 720, Erichaven, OR 84718' },
         consignee: { name: 'Smith, Leonard and Thompson', address: '538 Wells Mews, Williamchester, KS 32918' },
@@ -723,6 +730,7 @@ export class XTractFlowService {
         additionalBOLs: [
           {
             bolNumber: 'A860487F',
+            bolIssuer: 'Hunter Logistics Inc - Bill of Lading',
             carrier: { name: 'Hunter, Avila and King', scac: 'ABCD' },
             shipper: { name: 'Oliver Inc', address: '86047 Mallory Island, New Gerald, RI 66456' },
             consignee: { name: 'Clark, Suarez and Mcdaniel', address: '800 Gregory View Apt. 167, Melissamouth, CT 28153' },

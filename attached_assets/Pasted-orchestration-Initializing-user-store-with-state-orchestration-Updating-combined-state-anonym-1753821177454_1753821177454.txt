@@ -1,0 +1,123 @@
+orchestration: Initializing user store with state {}
+ orchestration: Updating combined state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}
+Navigated to https://c9e17bcd-9746-4af5-86e2-23404b0f6eb0-00-2838s1pej1j7h.kirk.replit.dev/
+chunk-FLCULYKI.js:31 orchestration: Initializing config store with state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}
+chunk-FLCULYKI.js:31 orchestration: Initializing feature flag store with state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}
+chunk-FLCULYKI.js:31 orchestration: Initializing user store with state {}
+chunk-FLCULYKI.js:31 orchestration: Updating combined state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}
+client:495 [vite] connecting...
+client:618 [vite] connected.
+chunk-WERSD76P.js?v=59164eec:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+208Fetch finished loading: GET "<URL>".
+chunk-FLCULYKI.js:31 orchestration: Initializing user store with state {}
+chunk-FLCULYKI.js:31 orchestration: Updating combined state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}
+c9e17bcd-9746-4af5-86e2-23404b0f6eb0-00-2838s1pej1j7h.kirk.replit.dev/:1 [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq)
+2queryClient.ts:18 Fetch finished loading: POST "https://c9e17bcd-9746-4af5-86e2-23404b0f6eb0-00-2838s1pej1j7h.kirk.replit.dev/api/documents/upload".
+apiRequest @ queryClient.ts:18
+mutationFn @ file-upload-zone.tsx:20
+fn @ @tanstack_react-query.js?v=59164eec:1189
+run @ @tanstack_react-query.js?v=59164eec:494
+start @ @tanstack_react-query.js?v=59164eec:536
+execute @ @tanstack_react-query.js?v=59164eec:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=59164eec:2630
+(anonymous) @ @tanstack_react-query.js?v=59164eec:3295
+(anonymous) @ file-upload-zone.tsx:41
+(anonymous) @ react-dropzone.js?v=59164eec:2988
+(anonymous) @ react-dropzone.js?v=59164eec:3007
+Promise.then
+(anonymous) @ react-dropzone.js?v=59164eec:3003
+(anonymous) @ react-dropzone.js?v=59164eec:2411
+(anonymous) @ react-dropzone.js?v=59164eec:2409
+callCallback2 @ chunk-WERSD76P.js?v=59164eec:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=59164eec:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=59164eec:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=59164eec:3736
+executeDispatch @ chunk-WERSD76P.js?v=59164eec:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=59164eec:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=59164eec:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=59164eec:7051
+(anonymous) @ chunk-WERSD76P.js?v=59164eec:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=59164eec:18913
+batchedUpdates @ chunk-WERSD76P.js?v=59164eec:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=59164eec:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=59164eec:5478
+dispatchEvent @ chunk-WERSD76P.js?v=59164eec:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=59164eec:5449
+processed-tab.tsx:66  GET https://c9e17bcd-9746-4af5-86e2-23404b0f6eb0-00-2838s1pej1j7h.kirk.replit.dev/api/documents/2/export 500 (Internal Server Error)
+handleDownloadJson @ processed-tab.tsx:66
+callCallback2 @ chunk-WERSD76P.js?v=59164eec:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=59164eec:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=59164eec:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=59164eec:3736
+executeDispatch @ chunk-WERSD76P.js?v=59164eec:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=59164eec:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=59164eec:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=59164eec:7051
+(anonymous) @ chunk-WERSD76P.js?v=59164eec:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=59164eec:18913
+batchedUpdates @ chunk-WERSD76P.js?v=59164eec:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=59164eec:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=59164eec:5478
+dispatchEvent @ chunk-WERSD76P.js?v=59164eec:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=59164eec:5449Understand this error
+processed-tab.tsx:66 Fetch failed loading: GET "https://c9e17bcd-9746-4af5-86e2-23404b0f6eb0-00-2838s1pej1j7h.kirk.replit.dev/api/documents/2/export".
+handleDownloadJson @ processed-tab.tsx:66
+callCallback2 @ chunk-WERSD76P.js?v=59164eec:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=59164eec:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=59164eec:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=59164eec:3736
+executeDispatch @ chunk-WERSD76P.js?v=59164eec:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=59164eec:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=59164eec:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=59164eec:7051
+(anonymous) @ chunk-WERSD76P.js?v=59164eec:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=59164eec:18913
+batchedUpdates @ chunk-WERSD76P.js?v=59164eec:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=59164eec:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=59164eec:5478
+dispatchEvent @ chunk-WERSD76P.js?v=59164eec:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=59164eec:5449
+processed-tab.tsx:253  GET https://c9e17bcd-9746-4af5-86e2-23404b0f6eb0-00-2838s1pej1j7h.kirk.replit.dev/api/documents/export/json 500 (Internal Server Error)
+handleBulkExport2 @ processed-tab.tsx:253
+onClick @ processed-tab.tsx:318
+handleEvent @ chunk-XQAWVTC6.js?v=59164eec:24
+callCallback2 @ chunk-WERSD76P.js?v=59164eec:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=59164eec:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=59164eec:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=59164eec:3736
+executeDispatch @ chunk-WERSD76P.js?v=59164eec:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=59164eec:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=59164eec:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=59164eec:7051
+(anonymous) @ chunk-WERSD76P.js?v=59164eec:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=59164eec:18913
+batchedUpdates @ chunk-WERSD76P.js?v=59164eec:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=59164eec:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=59164eec:5478
+dispatchEvent @ chunk-WERSD76P.js?v=59164eec:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=59164eec:5449Understand this error
+processed-tab.tsx:253 Fetch failed loading: GET "https://c9e17bcd-9746-4af5-86e2-23404b0f6eb0-00-2838s1pej1j7h.kirk.replit.dev/api/documents/export/json".
+handleBulkExport2 @ processed-tab.tsx:253
+onClick @ processed-tab.tsx:318
+handleEvent @ chunk-XQAWVTC6.js?v=59164eec:24
+callCallback2 @ chunk-WERSD76P.js?v=59164eec:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=59164eec:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=59164eec:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=59164eec:3736
+executeDispatch @ chunk-WERSD76P.js?v=59164eec:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=59164eec:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=59164eec:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=59164eec:7051
+(anonymous) @ chunk-WERSD76P.js?v=59164eec:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=59164eec:18913
+batchedUpdates @ chunk-WERSD76P.js?v=59164eec:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=59164eec:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=59164eec:5478
+dispatchEvent @ chunk-WERSD76P.js?v=59164eec:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=59164eec:5449
+c9e17bcd-9746-4af5-8….kirk.replit.dev/:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was receivedUnderstand this error
+chunk-FLCULYKI.js:31 orchestration: Initializing user store with state {}
+chunk-FLCULYKI.js:31 orchestration: Updating combined state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}
+chunk-FLCULYKI.js:31 orchestration: Initializing user store with state {}
+chunk-FLCULYKI.js:31 orchestration: Updating combined state {anonymous-site-visit-logging: {…}, chatgpt: {…}, context-menus: {…}, debugger: {…}, docs-support: {…}, …}

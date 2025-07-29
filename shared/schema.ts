@@ -35,6 +35,7 @@ export const bolDataSchema = z.object({
   
   // Primary BOL data (backward compatibility)
   bolNumber: z.string().optional(),
+  bolIssuer: z.string().optional(), // The organization that issued the BOL
   carrier: z.object({
     name: z.string().optional(),
     scac: z.string().optional(),
@@ -61,6 +62,7 @@ export const bolDataSchema = z.object({
   // Additional BOLs (for multi-BOL documents)
   additionalBOLs: z.array(z.object({
     bolNumber: z.string().optional(),
+    bolIssuer: z.string().optional(), // The organization that issued this BOL
     carrier: z.object({
       name: z.string().optional(),
       scac: z.string().optional(),

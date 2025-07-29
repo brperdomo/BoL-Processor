@@ -289,7 +289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             document_info: {
               internal_id: doc.id,
               source_filename: doc.originalName,
-              processed_date: doc.processedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+              processed_date: doc.processedAt ? new Date(doc.processedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
               confidence_score: Math.round((doc.confidence || 0) * 100) / 100,
               validation_status: doc.validationIssues ? "requires_review" : "validated",
               bol_sequence: 1,
@@ -297,6 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             bill_of_lading: {
               bol_number: bolData?.bolNumber || "N/A",
+              bol_issuer: bolData?.bolIssuer || "N/A",
               ship_date: bolData?.shipDate || "N/A",
               carrier_info: {
                 name: bolData?.carrier?.name || "N/A",
@@ -331,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 document_info: {
                   internal_id: `${doc.id}-${index + 2}`,
                   source_filename: doc.originalName,
-                  processed_date: doc.processedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+                  processed_date: doc.processedAt ? new Date(doc.processedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                   confidence_score: Math.round((additionalBOL.confidence || 0) * 100) / 100,
                   validation_status: "validated",
                   bol_sequence: index + 2,
@@ -339,6 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 },
                 bill_of_lading: {
                   bol_number: additionalBOL.bolNumber || "N/A",
+                  bol_issuer: additionalBOL.bolIssuer || "N/A",
                   ship_date: additionalBOL.shipDate || "N/A",
                   carrier_info: {
                     name: additionalBOL.carrier?.name || "N/A",
@@ -393,12 +395,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const primaryBOL = {
         internal_id: doc.id,
         source_filename: doc.originalName,
-        processed_date: doc.processedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+        processed_date: doc.processedAt ? new Date(doc.processedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         confidence_score: Math.round((doc.confidence || 0) * 100) / 100,
         validation_status: doc.validationIssues ? "requires_review" : "validated",
         bol_sequence: 1,
         total_bols_in_document: bolData?.totalBOLs || 1,
         bol_number: bolData?.bolNumber || "N/A",
+        bol_issuer: bolData?.bolIssuer || "N/A",
         ship_date: bolData?.shipDate || "N/A",
         carrier_name: bolData?.carrier?.name || "N/A",  
         carrier_scac: bolData?.carrier?.scac || "N/A",
@@ -421,12 +424,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           documents.push({
             internal_id: `${doc.id}-${index + 2}`,
             source_filename: doc.originalName,
-            processed_date: doc.processedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+            processed_date: doc.processedAt ? new Date(doc.processedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             confidence_score: Math.round((additionalBOL.confidence || 0) * 100) / 100,
             validation_status: "validated",
             bol_sequence: index + 2,
             total_bols_in_document: bolData.totalBOLs || 1,
             bol_number: additionalBOL.bolNumber || "N/A",
+            bol_issuer: additionalBOL.bolIssuer || "N/A",
             ship_date: additionalBOL.shipDate || "N/A",
             carrier_name: additionalBOL.carrier?.name || "N/A",
             carrier_scac: additionalBOL.carrier?.scac || "N/A",
@@ -641,13 +645,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bolData = document.extractedData as any;
       const filename = bolData?.bolNumber 
         ? `BOL_${bolData.bolNumber}_${document.id}.json`
-        : `BOL_${document.id}_${new Date().toISOString().split('T')[0]}.json`;
+        : `BOL_${document.id}_${document.processedAt ? new Date(document.processedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}.json`;
 
       const cleanExportData = {
         document_info: {
           internal_id: document.id,
           source_filename: document.originalName,
-          processed_date: document.processedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+          processed_date: document.processedAt ? new Date(document.processedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
           confidence_score: Math.round((document.confidence || 0) * 100) / 100,
           validation_status: document.validationIssues ? "requires_review" : "validated",
           export_timestamp: new Date().toISOString()
