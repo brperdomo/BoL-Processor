@@ -131,6 +131,13 @@ The project is now ready for GitHub deployment with comprehensive setup instruct
 - Port conflict resolution guidance
 
 ### Recent Changes (January 2025)
+- ✓ **ERP/WMS/TMS Integration Features**
+  - Added bulk JSON export endpoint (`/api/documents/export/json`) for batch processing
+  - Created individual document export with BOL-based filenames
+  - Implemented structured data format compatible with SAP, Oracle, Microsoft Dynamics
+  - Added export buttons in frontend for warehouse/logistics workflows
+  - Created comprehensive integration guide for ERP systems
+  - Export files include confidence scoring and validation flags for automated import decisions
 - ✓ **Render Deployment Solution (Complete)**
   - **Root Cause**: Render sets NODE_ENV=production causing npm to skip devDependencies needed for vite.config.ts
   - **Solution**: Build command uses NODE_ENV=development for install phase, production for runtime

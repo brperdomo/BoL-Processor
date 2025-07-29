@@ -21,21 +21,32 @@ function ProcessedCard({ document }: { document: Document }) {
     });
   };
 
-  const handleDownloadJson = () => {
-    const blob = new Blob([JSON.stringify(extractedData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${document.originalName}_extracted.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Download Started",
-      description: "JSON file download initiated",
-    });
+  const handleDownloadJson = async () => {
+    try {
+      const response = await fetch(`/api/documents/${document.id}/export`);
+      if (!response.ok) throw new Error('Export failed');
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `BOL_${document.id}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Download Started",
+        description: "BOL data exported successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Could not export BOL data",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -195,6 +206,36 @@ function ProcessedCard({ document }: { document: Document }) {
 }
 
 export default function ProcessedTab({ documents }: ProcessedTabProps) {
+  const { toast } = useToast();
+
+  const handleBulkExport = async () => {
+    try {
+      const response = await fetch('/api/documents/export/json');
+      if (!response.ok) throw new Error('Bulk export failed');
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'bol_export.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Bulk Export Complete",
+        description: `Exported ${documents.length} documents to JSON`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Could not export all documents",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (documents.length === 0) {
     return (
       <div className="text-center py-12">
@@ -209,9 +250,27 @@ export default function ProcessedTab({ documents }: ProcessedTabProps) {
 
   return (
     <div className="space-y-6">
-      {documents.map((document) => (
-        <ProcessedCard key={document.id} document={document} />
-      ))}
+      {/* Bulk Export Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-nutrient-text">Processed Documents</h3>
+          <p className="text-sm text-nutrient-text-secondary">{documents.length} documents ready for ERP/WMS integration</p>
+        </div>
+        <Button
+          onClick={handleBulkExport}
+          className="bg-nutrient-primary hover:bg-nutrient-primary/90 text-white"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Export All JSON
+        </Button>
+      </div>
+      
+      {/* Documents List */}
+      <div className="space-y-6">
+        {documents.map((document) => (
+          <ProcessedCard key={document.id} document={document} />
+        ))}
+      </div>
     </div>
   );
 }

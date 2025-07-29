@@ -263,6 +263,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export all processed documents as JSON
+  app.get("/api/documents/export/json", async (req, res) => {
+    try {
+      const processedDocs = await storage.getDocumentsByStatus("processed");
+      
+      if (processedDocs.length === 0) {
+        return res.status(404).json({ message: "No processed documents found" });
+      }
+
+      const exportData = {
+        exportTimestamp: new Date().toISOString(),
+        totalDocuments: processedDocs.length,
+        documents: processedDocs.map(doc => ({
+          documentId: doc.id,
+          filename: doc.originalName,
+          processedAt: doc.processedAt,
+          confidence: doc.confidence,
+          extractedData: doc.extractedData,
+          validationIssues: doc.validationIssues
+        }))
+      };
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="bol_export_${new Date().toISOString().split('T')[0]}.json"`);
+      res.json(exportData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to export documents" });
+    }
+  });
+
+  // Download individual document data as JSON
+  app.get("/api/documents/:id/export", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const document = await storage.getDocument(id);
+      
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      if (document.status !== "processed") {
+        return res.status(400).json({ message: "Document is not processed yet" });
+      }
+
+      const bolData = document.extractedData as any;
+      const filename = bolData?.bolNumber 
+        ? `BOL_${bolData.bolNumber}_${document.id}.json`
+        : `BOL_${document.id}_${new Date().toISOString().split('T')[0]}.json`;
+
+      const exportData = {
+        documentId: document.id,
+        originalFilename: document.originalName,
+        bolNumber: bolData?.bolNumber,
+        processedAt: document.processedAt,
+        confidence: document.confidence,
+        extractedData: document.extractedData,
+        validationIssues: document.validationIssues
+      };
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.json(exportData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to export document" });
+    }
+  });
+
   // Retry processing
   app.post("/api/documents/:id/retry", async (req, res) => {
     try {
