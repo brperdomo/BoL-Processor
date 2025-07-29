@@ -25,19 +25,16 @@ export class XTractFlowService {
 
   private loadConfig(): XTractFlowConfig | null {
     try {
-      // In production, use environment variables instead of file system
-      if (process.env.NODE_ENV === 'production') {
-        const apiUrl = process.env.XTRACTFLOW_API_URL;
-        const apiKey = process.env.XTRACTFLOW_API_KEY;
-        
-        if (apiUrl && apiKey) {
-          return {
-            apiUrl,
-            apiKey,
-            useMockApi: false
-          };
-        }
-        return null;
+      // Use environment variables for XTractFlow configuration
+      const apiUrl = process.env.XTRACTFLOW_API_URL || 'https://api.xtractflow.com/';
+      const apiKey = process.env.XTRACTFLOW_API_KEY;
+      
+      if (apiKey) {
+        return {
+          apiUrl,
+          apiKey,
+          useMockApi: false
+        };
       }
       
       // In development, try to load from file
