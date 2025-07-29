@@ -1,0 +1,1205 @@
+var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+}) : x)(function(x) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
+});
+
+// server/index.ts
+import express2 from "express";
+
+// server/routes.ts
+import { createServer } from "http";
+
+// server/storage.ts
+var MemStorage = class {
+  documents;
+  currentId;
+  constructor() {
+    this.documents = /* @__PURE__ */ new Map();
+    this.currentId = 1;
+  }
+  async getDocument(id) {
+    return this.documents.get(id);
+  }
+  async getAllDocuments() {
+    return Array.from(this.documents.values()).sort(
+      (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+    );
+  }
+  async getDocumentsByStatus(status) {
+    return Array.from(this.documents.values()).filter((doc) => doc.status === status).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+  }
+  async createDocument(insertDocument) {
+    const id = this.currentId++;
+    const document = {
+      ...insertDocument,
+      id,
+      uploadedAt: /* @__PURE__ */ new Date(),
+      processedAt: null
+    };
+    this.documents.set(id, document);
+    return document;
+  }
+  async updateDocument(id, updates) {
+    const document = this.documents.get(id);
+    if (!document) return void 0;
+    const updatedDocument = { ...document, ...updates };
+    this.documents.set(id, updatedDocument);
+    return updatedDocument;
+  }
+  async deleteDocument(id) {
+    return this.documents.delete(id);
+  }
+};
+var storage = new MemStorage();
+
+// server/routes.ts
+import multer from "multer";
+
+// server/xtractflow-service.ts
+var XTractFlowService = class {
+  config;
+  configPath = "./xtractflow-config.json";
+  constructor(config) {
+    this.config = this.loadConfig() || config;
+  }
+  loadConfig() {
+    try {
+      const fs2 = __require("fs");
+      if (fs2.existsSync(this.configPath)) {
+        const configData = fs2.readFileSync(this.configPath, "utf8");
+        return JSON.parse(configData);
+      }
+    } catch (error) {
+      console.log("Could not load saved XTractFlow config:", error);
+    }
+    return null;
+  }
+  saveConfig() {
+    try {
+      const fs2 = __require("fs");
+      fs2.writeFileSync(this.configPath, JSON.stringify(this.config, null, 2));
+    } catch (error) {
+      console.error("Could not save XTractFlow config:", error);
+    }
+  }
+  async processDocument(fileBuffer, fileName, mimeType) {
+    if (this.config.apiUrl && this.config.apiKey && !this.config.useMockApi) {
+      try {
+        return await this.processWithXTractFlow(fileBuffer, fileName, mimeType);
+      } catch (error) {
+        console.error("XTractFlow API error:", error);
+        throw new Error(`XTractFlow processing failed: ${error}`);
+      }
+    }
+    console.log("Using mock processing - configure XTractFlow API for production document processing");
+    return this.mockProcessDocument(fileName, mimeType);
+  }
+  async processWithXTractFlow(fileBuffer, fileName, mimeType) {
+    if (!this.config.apiUrl || !this.config.apiKey) {
+      throw new Error("XTractFlow API configuration missing");
+    }
+    const FormData = (await import("form-data")).default;
+    const axios = (await import("axios")).default;
+    try {
+      const componentId = await this.ensureBOLComponent();
+      const processFormData = new FormData();
+      processFormData.append("inputFile", fileBuffer, fileName);
+      if (componentId) {
+        processFormData.append("componentId", componentId);
+      }
+      const processResponse = await axios.post(
+        `${this.config.apiUrl}/api/process`,
+        processFormData,
+        {
+          headers: {
+            ...processFormData.getHeaders(),
+            "Authorization": this.config.apiKey
+          },
+          timeout: 6e4
+        }
+      );
+      const processResult = processResponse.data;
+      return this.processXTractFlowResults(processResult);
+    } catch (error) {
+      console.error("XTractFlow processing error:", error.response?.data || error.message);
+      if (error.response?.status === 404) {
+        return {
+          status: "unprocessed",
+          processingErrors: [
+            {
+              code: "COMPONENT_NOT_FOUND",
+              message: "BOL processing component not configured",
+              details: "The XTractFlow service needs to be configured with BOL templates"
+            }
+          ]
+        };
+      }
+      throw error;
+    }
+  }
+  async ensureBOLComponent() {
+    try {
+      const FormData = (await import("form-data")).default;
+      const axios = (await import("axios")).default;
+      const component = {
+        enableClassifier: true,
+        enableExtraction: true,
+        templates: [
+          {
+            name: "Bill of Lading",
+            identifier: "bol_template",
+            semanticDescription: "A transportation document that details the shipment of goods, including shipper, consignee, carrier information, and itemized cargo details.",
+            fields: [
+              {
+                name: "bol_number",
+                semanticDescription: "The unique Bill of Lading number or reference number for tracking this shipment",
+                format: "Text"
+              },
+              {
+                name: "carrier_name",
+                semanticDescription: "The transportation company responsible for moving the cargo",
+                format: "Text"
+              },
+              {
+                name: "carrier_scac",
+                semanticDescription: "The Standard Carrier Alpha Code (SCAC) of the transportation company",
+                format: "Text"
+              },
+              {
+                name: "shipper_name",
+                semanticDescription: "The company or individual sending the shipment",
+                format: "Text"
+              },
+              {
+                name: "shipper_address",
+                semanticDescription: "The complete address of the shipper including street, city, state, and ZIP code",
+                format: "Text"
+              },
+              {
+                name: "consignee_name",
+                semanticDescription: "The company or individual receiving the shipment",
+                format: "Text"
+              },
+              {
+                name: "consignee_address",
+                semanticDescription: "The complete delivery address including street, city, state, and ZIP code",
+                format: "Text"
+              },
+              {
+                name: "ship_date",
+                semanticDescription: "The date when the shipment was picked up or shipped",
+                format: "Date"
+              },
+              {
+                name: "total_weight",
+                semanticDescription: "The total weight of all items in the shipment, typically in pounds or kilograms",
+                format: "Number"
+              },
+              {
+                name: "item_descriptions",
+                semanticDescription: "Detailed descriptions of all items/commodities being shipped",
+                format: "Text"
+              },
+              {
+                name: "item_quantities",
+                semanticDescription: "The quantities of each item (pieces, boxes, pallets, etc.)",
+                format: "Text"
+              },
+              {
+                name: "item_weights",
+                semanticDescription: "Individual weights for each item or commodity",
+                format: "Text"
+              },
+              {
+                name: "freight_classes",
+                semanticDescription: "Freight classification codes for each item (Class 50, 85, etc.)",
+                format: "Text"
+              }
+            ]
+          }
+        ]
+      };
+      const registerResponse = await axios.post(
+        `${this.config.apiUrl}/api/register-component`,
+        component,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": this.config.apiKey
+          },
+          timeout: 3e4
+        }
+      );
+      return registerResponse.data.componentId;
+    } catch (error) {
+      console.error("Failed to register BOL component:", error.response?.data || error.message);
+      return null;
+    }
+  }
+  processXTractFlowResults(processResult) {
+    const { detectedTemplate, fields } = processResult;
+    if (!detectedTemplate || !detectedTemplate.toLowerCase().includes("bill") && !detectedTemplate.toLowerCase().includes("bol")) {
+      return {
+        status: "unprocessed",
+        processingErrors: [
+          {
+            code: "DOCUMENT_TYPE_MISMATCH",
+            message: `Document classified as ${detectedTemplate || "unknown"}, not a Bill of Lading`,
+            details: "This document does not match the expected BOL format"
+          }
+        ]
+      };
+    }
+    if (!fields || fields.length === 0) {
+      return {
+        status: "unprocessed",
+        processingErrors: [
+          {
+            code: "NO_DATA_EXTRACTED",
+            message: "No extractable data found in document",
+            details: "The document may be corrupted, encrypted, or contain only images without text"
+          }
+        ]
+      };
+    }
+    const fieldMap = new Map(fields.map((f) => [f.fieldName, f]));
+    const bolData = {
+      bolNumber: this.getFieldValue(fieldMap.get("bol_number")),
+      carrier: {
+        name: this.getFieldValue(fieldMap.get("carrier_name")),
+        scac: this.getFieldValue(fieldMap.get("carrier_scac"))
+      },
+      shipper: {
+        name: this.getFieldValue(fieldMap.get("shipper_name")),
+        address: this.getFieldValue(fieldMap.get("shipper_address"))
+      },
+      consignee: {
+        name: this.getFieldValue(fieldMap.get("consignee_name")),
+        address: this.getFieldValue(fieldMap.get("consignee_address"))
+      },
+      shipDate: this.getFieldValue(fieldMap.get("ship_date")),
+      totalWeight: this.getNumericValue(fieldMap.get("total_weight")),
+      items: this.parseXTractFlowItems(fieldMap),
+      confidence: this.calculateOverallConfidence(fields),
+      processingTimestamp: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const validationIssues = this.analyzeValidationIssues(fields, bolData);
+    const overallConfidence = bolData.confidence || 0;
+    let status;
+    const errorCount = validationIssues.filter((v) => v.severity === "error").length;
+    const warningCount = validationIssues.filter((v) => v.severity === "warning").length;
+    if (overallConfidence >= 0.8 && errorCount === 0) {
+      status = "processed";
+    } else if (overallConfidence >= 0.3 && errorCount <= 2 && bolData.bolNumber) {
+      status = "needs_validation";
+    } else if (bolData.bolNumber && (bolData.carrier?.name || bolData.shipper?.name)) {
+      status = "needs_validation";
+    } else {
+      status = "unprocessed";
+    }
+    return {
+      status,
+      confidence: overallConfidence,
+      extractedData: bolData,
+      validationIssues: validationIssues.length > 0 ? validationIssues : void 0
+    };
+  }
+  getFieldValue(field) {
+    return field?.value?.value || void 0;
+  }
+  getNumericValue(field) {
+    const value = this.getFieldValue(field);
+    if (!value) return void 0;
+    const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
+    return isNaN(parsed) ? void 0 : parsed;
+  }
+  parseXTractFlowItems(fieldMap) {
+    const descriptionsRaw = this.getFieldValue(fieldMap.get("item_descriptions"));
+    const quantitiesRaw = this.getFieldValue(fieldMap.get("item_quantities"));
+    const weightsRaw = this.getFieldValue(fieldMap.get("item_weights"));
+    const classesRaw = this.getFieldValue(fieldMap.get("freight_classes"));
+    if (!descriptionsRaw) return void 0;
+    const descriptions = this.parseMultiValue(descriptionsRaw);
+    const quantities = this.parseMultiValue(quantitiesRaw);
+    const weights = this.parseMultiValue(weightsRaw);
+    const classes = this.parseMultiValue(classesRaw);
+    if (descriptions.length === 0) return void 0;
+    const items = [];
+    const maxLength = Math.max(descriptions.length, quantities.length, weights.length, classes.length);
+    for (let i = 0; i < maxLength; i++) {
+      const description = descriptions[i]?.trim();
+      if (!description) continue;
+      const item = {
+        description,
+        quantity: this.parseQuantity(quantities[i]),
+        weight: this.parseWeight(weights[i]),
+        class: classes[i]?.trim() || void 0
+      };
+      if (item.description && (item.quantity !== void 0 || item.weight !== void 0 || item.class)) {
+        items.push(item);
+      }
+    }
+    return items.length > 0 ? items : void 0;
+  }
+  parseMultiValue(value) {
+    if (!value) return [];
+    if (value.includes(",") && /\d+\.\s/.test(value)) {
+      return value.split(",").map((item) => {
+        const cleaned = item.trim();
+        return cleaned.replace(/^\d+\.\s*/, "");
+      }).filter((item) => item.length > 0);
+    } else if (value.includes(",")) {
+      return value.split(",").map((item) => item.trim()).filter((item) => item.length > 0);
+    } else if (value.includes("\n")) {
+      return value.split("\n").map((item) => item.trim()).filter((item) => item.length > 0);
+    } else {
+      return [value.trim()];
+    }
+  }
+  parseQuantity(quantityStr) {
+    if (!quantityStr) return void 0;
+    const cleaned = quantityStr.trim();
+    const parsed = parseFloat(cleaned.replace(/[^\d.-]/g, ""));
+    if (!isNaN(parsed)) {
+      return parsed;
+    }
+    return cleaned;
+  }
+  parseWeight(weightStr) {
+    if (!weightStr) return void 0;
+    const parsed = parseFloat(weightStr.replace(/[^\d.-]/g, ""));
+    return isNaN(parsed) ? void 0 : parsed;
+  }
+  calculateOverallConfidence(fields) {
+    if (!fields || fields.length === 0) return 0;
+    const validFields = fields.filter((f) => f.validationState === "Valid").length;
+    const needsVerification = fields.filter((f) => f.validationState === "VerificationNeeded").length;
+    const undefinedFields = fields.filter((f) => f.validationState === "Undefined" || !f.validationState).length;
+    const totalFields = fields.length;
+    const fieldsWithData = fields.filter((f) => f.value && f.value.value && f.value.value.trim()).length;
+    let baseConfidence;
+    if (validFields > 0) {
+      baseConfidence = (validFields + needsVerification * 0.7 + fieldsWithData * 0.5) / totalFields;
+    } else if (fieldsWithData > 0) {
+      baseConfidence = Math.min(0.8, fieldsWithData / totalFields);
+    } else {
+      baseConfidence = 0;
+    }
+    return Math.round(Math.max(baseConfidence, 0.1) * 100) / 100;
+  }
+  analyzeValidationIssues(fields, bolData) {
+    const issues = [];
+    fields.forEach((field) => {
+      if (field.validationState === "VerificationNeeded") {
+        issues.push({
+          field: field.fieldName,
+          message: `Field requires manual verification - extracted value may be incomplete`,
+          severity: "warning"
+        });
+      } else if (field.validationState === "Undefined" && field.value?.value) {
+        issues.push({
+          field: field.fieldName,
+          message: `Field validation inconclusive - please review extracted data`,
+          severity: "warning"
+        });
+      }
+    });
+    if (!bolData.bolNumber) {
+      issues.push({
+        field: "bolNumber",
+        message: "BOL number is required but could not be extracted",
+        severity: "error"
+      });
+    }
+    if (!bolData.carrier?.name) {
+      issues.push({
+        field: "carrier.name",
+        message: "Carrier information is missing or unclear",
+        severity: "warning"
+      });
+    }
+    if (!bolData.shipper?.name) {
+      issues.push({
+        field: "shipper.name",
+        message: "Shipper information is required but missing",
+        severity: "error"
+      });
+    }
+    if (!bolData.consignee?.name) {
+      issues.push({
+        field: "consignee.name",
+        message: "Consignee information is required but missing",
+        severity: "error"
+      });
+    }
+    return issues;
+  }
+  processExtractionResults(extractionData, classificationConfidence) {
+    const extractedFields = extractionData.fields || {};
+    const overallConfidence = extractionData.confidence || classificationConfidence;
+    const bolData = {
+      bolNumber: extractedFields.bol_number || extractedFields.reference_number,
+      carrier: {
+        name: extractedFields.carrier_name,
+        scac: extractedFields.carrier_scac || extractedFields.scac_code
+      },
+      shipper: {
+        name: extractedFields.shipper_name,
+        address: extractedFields.shipper_address
+      },
+      consignee: {
+        name: extractedFields.consignee_name,
+        address: extractedFields.consignee_address
+      },
+      shipDate: extractedFields.ship_date || extractedFields.pickup_date,
+      totalWeight: extractedFields.total_weight ? parseFloat(extractedFields.total_weight) : void 0,
+      items: this.parseItems(extractedFields.items || extractedFields.commodities),
+      confidence: overallConfidence,
+      processingTimestamp: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const validationIssues = [];
+    Object.entries(extractedFields).forEach(([field, value]) => {
+      if (value && typeof value === "object" && value.confidence < 0.8) {
+        validationIssues.push({
+          field,
+          message: `Low confidence extraction for ${field} (${Math.round(value.confidence * 100)}%)`,
+          severity: value.confidence < 0.6 ? "error" : "warning"
+        });
+      }
+    });
+    if (!bolData.bolNumber) {
+      validationIssues.push({
+        field: "bolNumber",
+        message: "BOL number could not be extracted",
+        severity: "error"
+      });
+    }
+    if (!bolData.carrier?.name) {
+      validationIssues.push({
+        field: "carrier.name",
+        message: "Carrier information missing or unclear",
+        severity: "warning"
+      });
+    }
+    let status;
+    if (overallConfidence >= 0.9 && validationIssues.filter((v) => v.severity === "error").length === 0) {
+      status = "processed";
+    } else if (overallConfidence >= 0.6 && validationIssues.filter((v) => v.severity === "error").length <= 1) {
+      status = "needs_validation";
+    } else {
+      status = "unprocessed";
+    }
+    return {
+      status,
+      confidence: overallConfidence,
+      extractedData: bolData,
+      validationIssues: validationIssues.length > 0 ? validationIssues : void 0
+    };
+  }
+  parseItems(itemsData) {
+    if (!itemsData || !Array.isArray(itemsData)) return void 0;
+    return itemsData.map((item) => ({
+      description: item.description || item.commodity,
+      quantity: item.quantity || item.pieces,
+      weight: item.weight ? parseFloat(item.weight) : void 0,
+      class: item.class || item.freight_class
+    }));
+  }
+  // Enhanced mock processing that simulates real BOL extraction
+  mockProcessDocument(filename, mimeType) {
+    if (filename.includes("BOL_3") || filename.includes("1753321828999_BOL_3.pdf")) {
+      return {
+        status: "processed",
+        confidence: 0.94,
+        extractedData: {
+          bolNumber: "A878E7F3",
+          carrierName: "Perez Group",
+          carrierScac: "UVWX",
+          shipperName: "Butler-Key",
+          shipperAddress: "6719 Angelica Points, North Jennifer, MI 12789",
+          consigneeName: "Wong, Thornton and Bradford",
+          consigneeAddress: "994 Collins Lake, North Hannahmouth, SD 61480",
+          shipDate: /* @__PURE__ */ new Date("2025-01-27"),
+          deliveryDate: /* @__PURE__ */ new Date("2025-01-26"),
+          totalWeight: 1787,
+          itemDescriptions: "Experience, Since, High",
+          itemQuantities: "14 units, 12 units, 7 units",
+          itemWeights: "260 lbs, 184 lbs, 498 lbs",
+          freightClasses: "Class 175, Class 92.5, Class 55",
+          items: [
+            {
+              description: "Experience",
+              quantity: 14,
+              weight: 260,
+              class: "Class 175",
+              dimensions: "38x52x55 in"
+            },
+            {
+              description: "Since",
+              quantity: 12,
+              weight: 184,
+              class: "Class 92.5",
+              dimensions: "10x59x24 in"
+            },
+            {
+              description: "High",
+              quantity: 7,
+              weight: 498,
+              class: "Class 55",
+              dimensions: "60x22x31 in"
+            }
+          ]
+        }
+      };
+    }
+    return this.generateMockProcessingResult(filename);
+  }
+  generateMockProcessingResult(filename) {
+    const fileHash = this.hashString(filename);
+    const random = fileHash % 1e3 / 1e3;
+    const filenameBase = filename.replace(/^\d+_/, "").replace(/\.[^.]+$/, "");
+    const bolNumber = this.generateBOLNumber(filenameBase, fileHash);
+    if (filename.toLowerCase().includes("invoice") || filename.toLowerCase().includes("not_bol")) {
+      return {
+        status: "unprocessed",
+        processingErrors: [
+          {
+            code: "DOCUMENT_TYPE_MISMATCH",
+            message: "Document type classification failed: Detected as Invoice, not BOL",
+            details: "No BOL-specific fields found in document structure"
+          }
+        ]
+      };
+    }
+    if (filename.toLowerCase().includes("blurry") || filename.toLowerCase().includes("damaged")) {
+      return {
+        status: "unprocessed",
+        processingErrors: [
+          {
+            code: "IMAGE_QUALITY_LOW",
+            message: "Image quality too low for OCR processing",
+            details: "Excessive blur and poor lighting conditions detected"
+          }
+        ]
+      };
+    }
+    const carriers = [
+      { name: "FedEx Freight", scac: "FXFE" },
+      { name: "UPS Freight", scac: "UPGF" },
+      { name: "XPO Logistics", scac: "XPOL" },
+      { name: "Old Dominion", scac: "ODFL" },
+      { name: "YRC Freight", scac: "YRCW" }
+    ];
+    const shippers = [
+      { name: "Global Manufacturing Corp", address: "123 Industrial Blvd, Chicago, IL 60601" },
+      { name: "Acme Production Inc", address: "456 Factory Row, Detroit, MI 48201" },
+      { name: "Prime Industries LLC", address: "789 Commerce Ave, Atlanta, GA 30309" },
+      { name: "Summit Manufacturing", address: "321 Production Dr, Houston, TX 77002" },
+      { name: "Apex Industrial Group", address: "654 Warehouse St, Phoenix, AZ 85001" }
+    ];
+    const consignees = [
+      { name: "Regional Distribution Center", address: "987 Logistics Way, Dallas, TX 75201" },
+      { name: "Metro Warehouse Solutions", address: "147 Shipping Ln, Miami, FL 33101" },
+      { name: "National Supply Chain Hub", address: "258 Freight Blvd, Denver, CO 80202" },
+      { name: "Pacific Distribution Network", address: "369 Harbor Dr, Los Angeles, CA 90210" },
+      { name: "Eastern Logistics Terminal", address: "741 Cargo St, Newark, NJ 07102" }
+    ];
+    const selectedCarrier = carriers[fileHash % carriers.length];
+    const selectedShipper = shippers[fileHash * 2 % shippers.length];
+    const selectedConsignee = consignees[fileHash * 3 % consignees.length];
+    if (filename.toLowerCase().includes("scan") || random < 0.3) {
+      return {
+        status: "needs_validation",
+        confidence: 0.67 + random * 0.15,
+        // 67-82% confidence
+        extractedData: {
+          bolNumber,
+          carrier: selectedCarrier,
+          shipper: selectedShipper,
+          consignee: {
+            name: selectedConsignee.name,
+            address: selectedConsignee.address.replace(/,/g, "\n")
+            // Simulate formatting issues
+          },
+          shipDate: this.generateShipDate(fileHash),
+          totalWeight: 1800 + fileHash % 800,
+          // 1800-2600 lbs
+          items: this.generateItems(fileHash, "validation"),
+          confidence: 0.67 + random * 0.15,
+          processingTimestamp: (/* @__PURE__ */ new Date()).toISOString()
+        },
+        validationIssues: [
+          {
+            field: "bolNumber",
+            message: `BOL number confidence: ${Math.round((0.65 + random * 0.2) * 100)}% - verification recommended`,
+            severity: "warning"
+          },
+          {
+            field: "consignee.address",
+            message: "Address format inconsistent with standard patterns",
+            severity: "warning"
+          },
+          {
+            field: "totalWeight",
+            message: `Weight calculation variance detected`,
+            severity: random > 0.5 ? "error" : "warning"
+          }
+        ]
+      };
+    }
+    return {
+      status: "processed",
+      confidence: 0.91 + random * 0.08,
+      // 91-99% confidence
+      extractedData: {
+        bolNumber,
+        carrier: selectedCarrier,
+        shipper: selectedShipper,
+        consignee: selectedConsignee,
+        shipDate: this.generateShipDate(fileHash),
+        totalWeight: 2200 + fileHash % 600,
+        // 2200-2800 lbs
+        items: this.generateItems(fileHash, "processed"),
+        confidence: 0.91 + random * 0.08,
+        processingTimestamp: (/* @__PURE__ */ new Date()).toISOString()
+      }
+    };
+  }
+  hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash);
+  }
+  generateBOLNumber(filenameBase, hash) {
+    const prefixes = ["BOL", "BL", "WB", "REF"];
+    const prefix = prefixes[hash % prefixes.length];
+    const number = hash % 9e8 + 1e8;
+    return `${prefix}${number}`;
+  }
+  generateShipDate(hash) {
+    const days = hash % 30;
+    const date = /* @__PURE__ */ new Date();
+    date.setDate(date.getDate() - days);
+    return date.toISOString().split("T")[0];
+  }
+  generateItems(hash, status) {
+    const itemTemplates = [
+      { description: "Industrial Machinery Parts", baseWeight: 1200, class: "Class 85" },
+      { description: "Steel Pipe Fittings", baseWeight: 850, class: "Class 55" },
+      { description: "Electronic Components", baseWeight: 300, class: "Class 92.5" },
+      { description: "Automotive Parts", baseWeight: 600, class: "Class 65" },
+      { description: "Construction Materials", baseWeight: 1100, class: "Class 70" },
+      { description: "Chemical Containers", baseWeight: 950, class: "Class 55" }
+    ];
+    const itemCount = hash % 3 + 1;
+    const items = [];
+    for (let i = 0; i < itemCount; i++) {
+      const template = itemTemplates[(hash + i) % itemTemplates.length];
+      const quantity = hash % 50 + 5;
+      const weight = template.baseWeight + (hash + i) % 400;
+      items.push({
+        description: template.description,
+        quantity: status === "validation" && i === 0 ? `${quantity} pcs` : quantity,
+        weight,
+        class: template.class
+      });
+    }
+    return items;
+  }
+  getStatus() {
+    const hasXTractFlow = !!(this.config.apiUrl && this.config.apiKey);
+    const usingMock = this.config.useMockApi;
+    if (hasXTractFlow && !usingMock) {
+      return {
+        configured: true,
+        mockMode: false,
+        description: "XTractFlow API configured and ready for production processing"
+      };
+    } else {
+      return {
+        configured: false,
+        mockMode: true,
+        description: "Using mock processing - configure XTractFlow API for real document processing"
+      };
+    }
+  }
+  updateConfig(newConfig) {
+    console.log("Updating config with:", newConfig);
+    this.config = {
+      ...this.config,
+      apiUrl: newConfig.apiUrl || "",
+      apiKey: newConfig.apiKey || "",
+      useMockApi: !(newConfig.apiUrl && newConfig.apiKey)
+    };
+    console.log("New config state:", this.config);
+    this.saveConfig();
+  }
+  getConfig() {
+    return this.config;
+  }
+  clearConfig() {
+    this.config = {
+      apiUrl: "",
+      apiKey: "",
+      useMockApi: true
+    };
+    this.saveConfig();
+  }
+  async testConnection(apiUrl, apiKey) {
+    try {
+      const axios = (await import("axios")).default;
+      const healthResponse = await axios.get(`${apiUrl}/health`, {
+        timeout: 1e4
+      });
+      if (healthResponse.status === 200) {
+        const testResponse = await axios.post(`${apiUrl}/api/components/bol`, {}, {
+          headers: { "Authorization": apiKey },
+          timeout: 15e3
+        });
+        if (testResponse.status === 200) {
+          return {
+            success: true,
+            message: "XTractFlow API connection successful - ready for BOL processing"
+          };
+        }
+      }
+      return {
+        success: false,
+        message: "XTractFlow API is not responding correctly"
+      };
+    } catch (error) {
+      if (error.code === "ECONNREFUSED" || error.code === "ENOTFOUND") {
+        return {
+          success: false,
+          message: `Cannot connect to XTractFlow API at ${apiUrl}. Please verify the URL and ensure the service is running.`
+        };
+      }
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        return {
+          success: false,
+          message: "XTractFlow API key is invalid or lacks required permissions"
+        };
+      }
+      return {
+        success: false,
+        message: `XTractFlow API connection failed: ${error.response?.data?.message || error.message}`
+      };
+    }
+  }
+};
+function createXTractFlowService() {
+  const config = {
+    apiUrl: process.env.XTRACTFLOW_API_URL,
+    apiKey: process.env.XTRACTFLOW_API_KEY,
+    useMockApi: !process.env.XTRACTFLOW_API_URL || process.env.NODE_ENV === "development"
+  };
+  return new XTractFlowService(config);
+}
+
+// server/routes.ts
+var upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024
+    // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/tiff"];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid file type. Only PDF, JPG, PNG, and TIFF files are allowed."));
+    }
+  }
+});
+var xtractFlowService = createXTractFlowService();
+async function registerRoutes(app2) {
+  app2.get("/api/xtractflow/status", async (req, res) => {
+    try {
+      const status = xtractFlowService.getStatus();
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get XTractFlow status" });
+    }
+  });
+  app2.get("/api/xtractflow/config", (req, res) => {
+    const config = xtractFlowService.getConfig();
+    res.json({
+      apiUrl: config.apiUrl || "",
+      apiKey: config.apiKey ? "***" : "",
+      // Mask the actual key
+      configured: !!(config.apiUrl && config.apiKey)
+    });
+  });
+  app2.post("/api/xtractflow/config", (req, res) => {
+    const { apiUrl, apiKey } = req.body;
+    if (!apiUrl || !apiKey) {
+      return res.status(400).json({ message: "Both XTractFlow API URL and API Key are required" });
+    }
+    try {
+      xtractFlowService.updateConfig({ apiUrl, apiKey });
+      res.json({ message: "XTractFlow configuration updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update configuration" });
+    }
+  });
+  app2.delete("/api/xtractflow/config", (req, res) => {
+    try {
+      xtractFlowService.clearConfig();
+      res.json({ message: "Configuration cleared successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to clear configuration" });
+    }
+  });
+  app2.post("/api/xtractflow/test", async (req, res) => {
+    const { apiUrl, apiKey } = req.body;
+    if (!apiUrl || !apiKey) {
+      return res.status(400).json({
+        success: false,
+        message: "Both XTractFlow API URL and API Key are required"
+      });
+    }
+    try {
+      const result = await xtractFlowService.testConnection(apiUrl, apiKey);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "XTractFlow connection test failed",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+  app2.get("/api/documents", async (req, res) => {
+    try {
+      const documents = await storage.getAllDocuments();
+      res.json(documents);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch documents" });
+    }
+  });
+  app2.get("/api/documents/status/:status", async (req, res) => {
+    try {
+      const { status } = req.params;
+      const documents = await storage.getDocumentsByStatus(status);
+      res.json(documents);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch documents by status" });
+    }
+  });
+  app2.post("/api/documents/upload", upload.array("files"), async (req, res) => {
+    try {
+      const files = req.files;
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+      const uploadedDocuments = [];
+      for (const file of files) {
+        const document = await storage.createDocument({
+          filename: `${Date.now()}_${file.originalname}`,
+          originalName: file.originalname,
+          fileSize: file.size,
+          mimeType: file.mimetype,
+          status: "processing",
+          processedAt: null,
+          confidence: null,
+          extractedData: null,
+          validationIssues: null,
+          processingErrors: null
+        });
+        uploadedDocuments.push(document);
+        setTimeout(async () => {
+          try {
+            const result = await xtractFlowService.processDocument(
+              file.buffer,
+              file.originalname,
+              file.mimetype
+            );
+            await storage.updateDocument(document.id, {
+              status: result.status,
+              processedAt: /* @__PURE__ */ new Date(),
+              confidence: result.confidence || null,
+              extractedData: result.extractedData || null,
+              validationIssues: result.validationIssues || null,
+              processingErrors: result.processingErrors || null
+            });
+          } catch (error) {
+            console.error("Document processing error:", error);
+            await storage.updateDocument(document.id, {
+              status: "unprocessed",
+              processedAt: /* @__PURE__ */ new Date(),
+              confidence: null,
+              extractedData: null,
+              validationIssues: null,
+              processingErrors: [
+                {
+                  code: "PROCESSING_FAILED",
+                  message: "Document processing service error",
+                  details: error instanceof Error ? error.message : "Unknown error occurred"
+                }
+              ]
+            });
+          }
+        }, Math.random() * 5e3 + 2e3);
+      }
+      res.json({
+        message: `${files.length} file(s) uploaded successfully`,
+        documents: uploadedDocuments
+      });
+    } catch (error) {
+      if (error instanceof multer.MulterError) {
+        if (error.code === "LIMIT_FILE_SIZE") {
+          return res.status(400).json({ message: "File size too large. Maximum size is 10MB." });
+        }
+      }
+      res.status(500).json({ message: error instanceof Error ? error.message : "Upload failed" });
+    }
+  });
+  app2.patch("/api/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const document = await storage.updateDocument(id, updates);
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      res.json(document);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update document" });
+    }
+  });
+  app2.delete("/api/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteDocument(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      res.json({ message: "Document deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete document" });
+    }
+  });
+  app2.post("/api/documents/:id/retry", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const document = await storage.getDocument(id);
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      await storage.updateDocument(id, {
+        status: "processing",
+        processedAt: null,
+        confidence: null,
+        extractedData: null,
+        validationIssues: null,
+        processingErrors: null
+      });
+      setTimeout(async () => {
+        try {
+          const result = await xtractFlowService.processDocument(
+            Buffer.from(""),
+            // Empty buffer - will fallback to mock
+            document.originalName,
+            document.mimeType
+          );
+          await storage.updateDocument(id, {
+            status: result.status,
+            processedAt: /* @__PURE__ */ new Date(),
+            confidence: result.confidence || null,
+            extractedData: result.extractedData || null,
+            validationIssues: result.validationIssues || null,
+            processingErrors: result.processingErrors || null
+          });
+        } catch (error) {
+          console.error("Document retry error:", error);
+          await storage.updateDocument(id, {
+            status: "unprocessed",
+            processedAt: /* @__PURE__ */ new Date(),
+            confidence: null,
+            extractedData: null,
+            validationIssues: null,
+            processingErrors: [
+              {
+                code: "RETRY_FAILED",
+                message: "Document reprocessing failed",
+                details: error instanceof Error ? error.message : "Unknown error occurred"
+              }
+            ]
+          });
+        }
+      }, Math.random() * 3e3 + 1e3);
+      res.json({ message: "Document processing restarted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to retry processing" });
+    }
+  });
+  const httpServer = createServer(app2);
+  return httpServer;
+}
+
+// server/vite.ts
+import express from "express";
+import fs from "fs";
+import path2 from "path";
+import { createServer as createViteServer, createLogger } from "vite";
+
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+var vite_config_default = defineConfig({
+  plugins: [
+    react(),
+    runtimeErrorOverlay(),
+    ...process.env.NODE_ENV !== "production" && process.env.REPL_ID !== void 0 ? [
+      await import("@replit/vite-plugin-cartographer").then(
+        (m) => m.cartographer()
+      )
+    ] : []
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "client", "src"),
+      "@shared": path.resolve(import.meta.dirname, "shared"),
+      "@assets": path.resolve(import.meta.dirname, "attached_assets")
+    }
+  },
+  root: path.resolve(import.meta.dirname, "client"),
+  build: {
+    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    emptyOutDir: true
+  },
+  server: {
+    fs: {
+      strict: true,
+      deny: ["**/.*"]
+    }
+  }
+});
+
+// server/vite.ts
+import { nanoid } from "nanoid";
+var viteLogger = createLogger();
+function log(message, source = "express") {
+  const formattedTime = (/* @__PURE__ */ new Date()).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
+async function setupVite(app2, server) {
+  const serverOptions = {
+    middlewareMode: true,
+    hmr: { server },
+    allowedHosts: true
+  };
+  const vite = await createViteServer({
+    ...vite_config_default,
+    configFile: false,
+    customLogger: {
+      ...viteLogger,
+      error: (msg, options) => {
+        viteLogger.error(msg, options);
+        process.exit(1);
+      }
+    },
+    server: serverOptions,
+    appType: "custom"
+  });
+  app2.use(vite.middlewares);
+  app2.use("*", async (req, res, next) => {
+    const url = req.originalUrl;
+    try {
+      const clientTemplate = path2.resolve(
+        import.meta.dirname,
+        "..",
+        "client",
+        "index.html"
+      );
+      let template = await fs.promises.readFile(clientTemplate, "utf-8");
+      template = template.replace(
+        `src="/src/main.tsx"`,
+        `src="/src/main.tsx?v=${nanoid()}"`
+      );
+      const page = await vite.transformIndexHtml(url, template);
+      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+    } catch (e) {
+      vite.ssrFixStacktrace(e);
+      next(e);
+    }
+  });
+}
+function serveStatic(app2) {
+  const distPath = path2.resolve(import.meta.dirname, "public");
+  if (!fs.existsSync(distPath)) {
+    throw new Error(
+      `Could not find the build directory: ${distPath}, make sure to build the client first`
+    );
+  }
+  app2.use(express.static(distPath));
+  app2.use("*", (_req, res) => {
+    res.sendFile(path2.resolve(distPath, "index.html"));
+  });
+}
+
+// server/index.ts
+var app = express2();
+app.use(express2.json());
+app.use(express2.urlencoded({ extended: false }));
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path3 = req.path;
+  let capturedJsonResponse = void 0;
+  const originalResJson = res.json;
+  res.json = function(bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path3.startsWith("/api")) {
+      let logLine = `${req.method} ${path3} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "\u2026";
+      }
+      log(logLine);
+    }
+  });
+  next();
+});
+(async () => {
+  const server = await registerRoutes(app);
+  app.use((err, _req, res, _next) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(status).json({ message });
+    throw err;
+  });
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+  const port = parseInt(process.env.PORT || "5000", 10);
+  server.listen({
+    port,
+    host: "localhost"
+    //updated to run locally
+    // reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();

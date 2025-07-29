@@ -25,7 +25,10 @@ git push -u origin main
 # 2. Deploy on Vercel
 # - Go to vercel.com
 # - Connect GitHub repository
-# - Click Deploy (auto-detects configuration)
+# - Set Framework: Vite
+# - Build Command: vite build
+# - Output Directory: dist/public
+# - Click Deploy
 ```
 
 ## 🎯 **What Works in Vercel Demo:**

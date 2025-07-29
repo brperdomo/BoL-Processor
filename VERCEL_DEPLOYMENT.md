@@ -18,7 +18,10 @@ git push -u origin main
 ### 2. **Deploy to Vercel**
 1. Go to [vercel.com](https://vercel.com) and connect your GitHub account
 2. Click "New Project" and select your GitHub repository
-3. Vercel will automatically detect the configuration from `vercel.json`
+3. Configure build settings:
+   - **Framework Preset**: Vite
+   - **Build Command**: `vite build`
+   - **Output Directory**: `dist/public`
 4. Click "Deploy"
 
 ### 3. **Environment Variables (Optional)**

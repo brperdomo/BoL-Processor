@@ -79,3 +79,13 @@ temp/
 
 # Vercel
 .vercel
+vercel-dist/
+
+# Build outputs
+dist/
+
+# Server config files (not deployment)
+xtractflow-config.json
+
+# Development-only services
+dotnet-service/
