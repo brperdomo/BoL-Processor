@@ -129,7 +129,7 @@ export class XTractFlowService {
             ...processFormData.getHeaders(),
             'Authorization': this.config.apiKey,
           },
-          timeout: 60000,
+          timeout: 120000,
         }
       );
 
@@ -330,8 +330,12 @@ export class XTractFlowService {
     const validationIssues = this.analyzeValidationIssues(fields, bolData);
     const overallConfidence = bolData.confidence || 0;
 
+    // Fix confidence threshold logic
+    const statusThreshold = 0.8;
+    const finalStatus = overallConfidence >= statusThreshold ? 'processed' : 'needs_validation';
+    
     return {
-      status: overallConfidence > 0.8 ? 'processed' : 'needs_validation',
+      status: finalStatus,
       confidence: overallConfidence,
       extractedData: bolData,
       validationIssues: validationIssues.length > 0 ? validationIssues : undefined,
@@ -760,8 +764,10 @@ export class XTractFlowService {
       // Needs validation
       return {
         status: 'needs_validation',
-        confidence: 0.67 + (random * 0.15), // 67-82% confidence
+        confidence: 0.67 + (random * 0.12), // 67-79% confidence (below 80% threshold)
         extractedData: {
+          documentType: 'single_bol',
+          totalBOLs: 1,
           bolNumber: bolNumber,
           carrier: selectedCarrier,
           shipper: selectedShipper,
@@ -772,7 +778,7 @@ export class XTractFlowService {
           shipDate: this.generateShipDate(fileHash),
           totalWeight: 1800 + (fileHash % 800), // 1800-2600 lbs
           items: this.generateItems(fileHash, 'validation'),
-          confidence: 0.67 + (random * 0.15),
+          confidence: 0.67 + (random * 0.12),
           processingTimestamp: new Date().toISOString()
         },
         validationIssues: [
@@ -795,11 +801,16 @@ export class XTractFlowService {
       };
     }
 
-    // Successfully processed
+    // Successfully processed - confidence above 80% threshold
+    const confidence = 0.82 + (random * 0.17); // 82-99% confidence
+    const isMultiBOL = random > 0.7; // 30% chance of multi-BOL
+    
     return {
       status: 'processed',
-      confidence: 0.91 + (random * 0.08), // 91-99% confidence
+      confidence: confidence,
       extractedData: {
+        documentType: isMultiBOL ? 'multi_bol' : 'single_bol',
+        totalBOLs: isMultiBOL ? 2 : 1,
         bolNumber: bolNumber,
         carrier: selectedCarrier,
         shipper: selectedShipper,
@@ -807,8 +818,19 @@ export class XTractFlowService {
         shipDate: this.generateShipDate(fileHash),
         totalWeight: 2200 + (fileHash % 600), // 2200-2800 lbs
         items: this.generateItems(fileHash, 'processed'),
-        confidence: 0.91 + (random * 0.08),
-        processingTimestamp: new Date().toISOString()
+        confidence: confidence,
+        processingTimestamp: new Date().toISOString(),
+        additionalBOLs: isMultiBOL ? [{
+          bolNumber: `${bolNumber}B`,
+          carrier: { name: 'Secondary Carrier', scac: 'SEC2' },
+          shipper: { name: 'Additional Shipper', address: '456 Second St, Chicago, IL' },
+          consignee: { name: 'Second Consignee', address: '789 Delivery Ave, Dallas, TX' },
+          shipDate: this.generateShipDate(fileHash + 1),
+          totalWeight: 1500 + (fileHash % 300),
+          items: [{ description: 'Additional Items', quantity: 5, weight: 150, class: 'Class 65' }],
+          confidence: 0.85,
+          pageNumber: 2
+        }] : undefined
       }
     };
   }
