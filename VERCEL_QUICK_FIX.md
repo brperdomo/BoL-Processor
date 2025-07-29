@@ -21,7 +21,7 @@ git push -u origin main
 3. Click "New Project" → Select your repository
 4. Configure these build settings:
    - **Framework Preset**: `Other`
-   - **Build Command**: `npx vite build --outDir public`
+   - **Build Command**: `npx vite build --outDir public` (remove any `./` prefix!)
    - **Output Directory**: `public`
    - **Install Command**: `npm ci`
 5. Click "Deploy"
@@ -58,10 +58,10 @@ If you see `__require` errors or "Dynamic require not supported":
 
 ### **Output Directory Error:**
 If you see "No Output Directory named 'public' found":
-1. ✅ **Fixed**: Build now runs from `client` directory with proper output path
+1. ✅ **Common Issue**: Remove `./` from build command path (use `public` not `./public`)
 2. ✅ **Fixed**: Uses `npx vite build --outDir public` command (Vite config handles root)
 3. ✅ **Fixed**: Set Framework to "Other" to avoid Vite auto-detection conflicts
-4. Push the latest changes and redeploy
+4. **Critical**: Build command must be exactly `npx vite build --outDir public`
 
 ### **Other Build Errors:**
 If you still see issues:
