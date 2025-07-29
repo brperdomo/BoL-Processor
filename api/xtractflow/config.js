@@ -1,4 +1,6 @@
 // Vercel serverless function for XTractFlow configuration
+import { configurationState } from './status.js';
+
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,9 +16,11 @@ export default async function handler(req, res) {
       case 'GET':
         // Return current config status for Vercel demo
         return res.status(200).json({
-          configured: false,
+          configured: configurationState.configured,
           mockMode: true,
-          message: 'Running in Vercel demo mode - XTractFlow not configured'
+          apiKey: configurationState.apiKey ? '***masked***' : null,
+          baseUrl: configurationState.baseUrl,
+          message: 'Running in Vercel demo mode'
         });
 
       case 'POST':
@@ -32,7 +36,11 @@ export default async function handler(req, res) {
           });
         }
 
-        // For Vercel demo, just return success without actually configuring
+        // Save configuration for demo mode
+        configurationState.configured = true;
+        configurationState.apiKey = config.apiKey;
+        configurationState.baseUrl = config.baseUrl;
+        
         return res.status(200).json({
           success: true,
           message: 'Configuration saved successfully (demo mode)',

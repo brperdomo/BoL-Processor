@@ -1,8 +1,11 @@
 // Vercel serverless function for document management
 import { nanoid } from 'nanoid';
 
-// Simple in-memory storage for Vercel demo (shared with upload.js)
-let documentsStore = [];
+// Global document storage for Vercel serverless functions
+if (!global.documentsStore) {
+  global.documentsStore = [];
+}
+const documentsStore = global.documentsStore;
 
 class MemStorage {
   constructor() {

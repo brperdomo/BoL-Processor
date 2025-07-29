@@ -1,4 +1,11 @@
 // Vercel serverless function for XTractFlow status
+// Simple configuration state (in production would be database)
+let configurationState = {
+  configured: false,
+  apiKey: null,
+  baseUrl: null
+};
+
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,12 +20,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // For Vercel deployment, we'll always return mock mode
-  // since we can't run the containerized .NET service
+  // Return current configuration status
   return res.status(200).json({
-    configured: false,
-    mockMode: true,
-    description: 'Vercel Demo Mode - Using mock processing for demonstration',
-    environment: 'vercel'
+    configured: configurationState.configured,
+    mockMode: true, // Always mock mode in Vercel
+    description: configurationState.configured 
+      ? 'XTractFlow Configured - Demo Mode Active'
+      : 'XTractFlow Not Configured - Demo Mode',
+    environment: 'vercel',
+    hasApiKey: !!configurationState.apiKey,
+    hasBaseUrl: !!configurationState.baseUrl
   });
 }
+
+// Export configuration state for other functions
+export { configurationState };

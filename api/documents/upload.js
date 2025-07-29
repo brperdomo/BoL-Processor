@@ -8,8 +8,11 @@ export const config = {
   },
 };
 
-// Simple in-memory storage for Vercel demo (shared with documents.js)
-let documentsStore = [];
+// Global document storage for Vercel serverless functions
+if (!global.documentsStore) {
+  global.documentsStore = [];
+}
+const documentsStore = global.documentsStore;
 
 function parseForm(req) {
   return new Promise((resolve, reject) => {
