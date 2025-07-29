@@ -49,11 +49,12 @@ After deployment, you'll have:
 
 ## 🔧 **Common Issues & Fixes**
 
-### **Node.js Version Error:**
-If you see "Found invalid Node.js Version: 22.x":
-1. ✅ **Fixed**: Added `.nvmrc` file with Node 18
-2. ✅ **Fixed**: Updated `vercel.json` to use `nodejs18.x` runtime
-3. Push the latest changes and redeploy
+### **Function Runtime Errors:**
+If you see "Function Runtimes must have a valid version":
+1. ✅ **Fixed**: Simplified `vercel.json` to use automatic detection
+2. ✅ **Fixed**: Removed complex function runtime configuration
+3. ✅ **Fixed**: Let Vercel auto-detect Node.js version from `.nvmrc`
+4. Push the latest changes and redeploy
 
 ### **Other Build Errors:**
 If you still see issues:
