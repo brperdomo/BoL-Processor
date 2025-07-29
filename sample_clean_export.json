@@ -1,0 +1,56 @@
+{
+  "export_metadata": {
+    "generated_at": "2025-07-29",
+    "generated_time": "19:17:30",
+    "total_documents": 1,
+    "export_format_version": "1.0",
+    "source_system": "Nutrient BOL Processor"
+  },
+  "documents": [
+    {
+      "document_info": {
+        "internal_id": 1,
+        "source_filename": "sample_bol_3.pdf",
+        "processed_date": "2025-07-29",
+        "confidence_score": 0.94,
+        "validation_status": "validated"
+      },
+      "bill_of_lading": {
+        "bol_number": "BOL126854408",
+        "ship_date": "2025-07-01",
+        "carrier_info": {
+          "name": "Old Dominion",
+          "scac_code": "ODFL"
+        },
+        "shipper": {
+          "company_name": "Acme Production Inc",
+          "address": "456 Factory Row, Detroit, MI 48201"
+        },
+        "consignee": {
+          "company_name": "Eastern Logistics Terminal",
+          "address": "741 Cargo St, Newark, NJ 07102"
+        },
+        "shipment_details": {
+          "total_weight_lbs": 2408,
+          "item_count": 2,
+          "items": [
+            {
+              "line_number": 1,
+              "description": "Construction Materials",
+              "quantity": 13,
+              "weight_lbs": 1108,
+              "freight_class": "Class 70"
+            },
+            {
+              "line_number": 2,
+              "description": "Chemical Containers",
+              "quantity": 13,
+              "weight_lbs": 959,
+              "freight_class": "Class 55"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -20,55 +20,75 @@ The Nutrient BOL Processor exports structured JSON data that can be directly int
 
 ## Data Structure
 
-### Bulk Export Format
+### Clean, Professional Export Format
+The new export format is specifically designed for enterprise ERP integration with clean field names and structured hierarchy:
+
 ```json
 {
-  "exportTimestamp": "2025-07-29T18:40:14.123Z",
-  "totalDocuments": 5,
+  "export_metadata": {
+    "generated_at": "2025-07-29",
+    "generated_time": "19:17:30",
+    "total_documents": 1,
+    "export_format_version": "1.0",
+    "source_system": "Nutrient BOL Processor"
+  },
   "documents": [
     {
-      "documentId": 1,
-      "filename": "sample_bol_3.pdf",
-      "processedAt": "2025-07-29T18:35:52.396Z",
-      "confidence": 0.94264,
-      "extractedData": {
-        "bolNumber": "BOL126854408",
-        "carrier": {
+      "document_info": {
+        "internal_id": 1,
+        "source_filename": "sample_bol_3.pdf",
+        "processed_date": "2025-07-29",
+        "confidence_score": 0.94,
+        "validation_status": "validated"
+      },
+      "bill_of_lading": {
+        "bol_number": "BOL126854408",
+        "ship_date": "2025-07-01",
+        "carrier_info": {
           "name": "Old Dominion",
-          "scac": "ODFL"
+          "scac_code": "ODFL"
         },
         "shipper": {
-          "name": "Acme Production Inc",
+          "company_name": "Acme Production Inc",
           "address": "456 Factory Row, Detroit, MI 48201"
         },
         "consignee": {
-          "name": "Eastern Logistics Terminal", 
+          "company_name": "Eastern Logistics Terminal",
           "address": "741 Cargo St, Newark, NJ 07102"
         },
-        "shipDate": "2025-07-01",
-        "totalWeight": 2408,
-        "items": [
-          {
-            "description": "Construction Materials",
-            "quantity": 13,
-            "weight": 1108,
-            "class": "Class 70"
-          },
-          {
-            "description": "Chemical Containers", 
-            "quantity": 13,
-            "weight": 959,
-            "class": "Class 55"
-          }
-        ],
-        "confidence": 0.94264,
-        "processingTimestamp": "2025-07-29T18:35:52.396Z"
-      },
-      "validationIssues": null
+        "shipment_details": {
+          "total_weight_lbs": 2408,
+          "item_count": 2,
+          "items": [
+            {
+              "line_number": 1,
+              "description": "Construction Materials",
+              "quantity": 13,
+              "weight_lbs": 1108,
+              "freight_class": "Class 70"
+            },
+            {
+              "line_number": 2,
+              "description": "Chemical Containers",
+              "quantity": 13,
+              "weight_lbs": 959,
+              "freight_class": "Class 55"
+            }
+          ]
+        }
+      }
     }
   ]
 }
 ```
+
+### Key Improvements
+- **Clean field naming**: `company_name` instead of nested objects
+- **Structured hierarchy**: Clear separation of document info vs BOL data
+- **Line numbering**: Items numbered for easy mapping to ERP line items
+- **Validation flags**: `validated` vs `requires_review` for automated processing
+- **Confidence scoring**: Rounded to 2 decimal places for readability
+- **Date formatting**: Simple YYYY-MM-DD format instead of full timestamps
 
 ## Integration Patterns
 
@@ -76,9 +96,46 @@ The Nutrient BOL Processor exports structured JSON data that can be directly int
 
 **SAP, Oracle, Microsoft Dynamics**
 - Import BOL data into Purchase Orders, Goods Receipts
-- Map `bolNumber` to PO references
-- Use `shipper`/`consignee` for vendor/customer lookups
-- Import `items` array for line item details
+- Map `bol_number` to PO references
+- Use `shipper`/`consignee` company names for vendor/customer lookups
+- Import `items` array for line item details with proper line numbering
+
+**Example Mapping:**
+```javascript
+// ERP Import Script - Clean Format
+const exportData = JSON.parse(exportedBOL);
+exportData.documents.forEach(doc => {
+  const bol = doc.bill_of_lading;
+  const purchaseOrder = {
+    documentNumber: bol.bol_number,
+    vendor: bol.shipper.company_name,
+    vendorAddress: bol.shipper.address,
+    customer: bol.consignee.company_name,
+    deliveryAddress: bol.consignee.address,
+    carrier: bol.carrier_info.name,
+    scacCode: bol.carrier_info.scac_code,
+    expectedDate: bol.ship_date,
+    totalWeight: bol.shipment_details.total_weight_lbs,
+    lineItems: bol.shipment_details.items.map(item => ({
+      lineNumber: item.line_number,
+      description: item.description,
+      quantity: item.quantity,
+      weightLbs: item.weight_lbs,
+      freightClass: item.freight_class
+    })),
+    validationStatus: doc.document_info.validation_status,
+    confidenceScore: doc.document_info.confidence_score
+  };
+  
+  // Auto-import if validated and high confidence
+  if (doc.document_info.validation_status === 'validated' && 
+      doc.document_info.confidence_score > 0.90) {
+    importToERP(purchaseOrder);
+  } else {
+    flagForReview(purchaseOrder);
+  }
+});
+```
 
 ### 2. WMS Integration
 

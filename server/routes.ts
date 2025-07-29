@@ -272,22 +272,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "No processed documents found" });
       }
 
-      const exportData = {
-        exportTimestamp: new Date().toISOString(),
-        totalDocuments: processedDocs.length,
-        documents: processedDocs.map(doc => ({
-          documentId: doc.id,
-          filename: doc.originalName,
-          processedAt: doc.processedAt,
-          confidence: doc.confidence,
-          extractedData: doc.extractedData,
-          validationIssues: doc.validationIssues
-        }))
+      const cleanExportData = {
+        export_metadata: {
+          generated_at: new Date().toISOString().split('T')[0],
+          generated_time: new Date().toLocaleTimeString('en-US', { hour12: false }),
+          total_documents: processedDocs.length,
+          export_format_version: "1.0",
+          source_system: "Nutrient BOL Processor"
+        },
+        documents: processedDocs.map(doc => {
+          const bolData = doc.extractedData as any;
+          return {
+            document_info: {
+              internal_id: doc.id,
+              source_filename: doc.originalName,
+              processed_date: doc.processedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+              confidence_score: Math.round((doc.confidence || 0) * 100) / 100,
+              validation_status: doc.validationIssues ? "requires_review" : "validated"
+            },
+            bill_of_lading: {
+              bol_number: bolData?.bolNumber || "N/A",
+              ship_date: bolData?.shipDate || "N/A",
+              carrier_info: {
+                name: bolData?.carrier?.name || "N/A",
+                scac_code: bolData?.carrier?.scac || "N/A"
+              },
+              shipper: {
+                company_name: bolData?.shipper?.name || "N/A",
+                address: bolData?.shipper?.address || "N/A"
+              },
+              consignee: {
+                company_name: bolData?.consignee?.name || "N/A", 
+                address: bolData?.consignee?.address || "N/A"
+              },
+              shipment_details: {
+                total_weight_lbs: bolData?.totalWeight || 0,
+                item_count: bolData?.items?.length || 0,
+                items: (bolData?.items || []).map((item: any, index: number) => ({
+                  line_number: index + 1,
+                  description: item.description || "N/A",
+                  quantity: item.quantity || 0,
+                  weight_lbs: item.weight || 0,
+                  freight_class: item.class || "N/A"
+                }))
+              }
+            }
+          };
+        })
       };
 
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', `attachment; filename="bol_export_${new Date().toISOString().split('T')[0]}.json"`);
-      res.json(exportData);
+      res.json(cleanExportData);
     } catch (error) {
       res.status(500).json({ message: "Failed to export documents" });
     }
@@ -312,19 +348,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `BOL_${bolData.bolNumber}_${document.id}.json`
         : `BOL_${document.id}_${new Date().toISOString().split('T')[0]}.json`;
 
-      const exportData = {
-        documentId: document.id,
-        originalFilename: document.originalName,
-        bolNumber: bolData?.bolNumber,
-        processedAt: document.processedAt,
-        confidence: document.confidence,
-        extractedData: document.extractedData,
-        validationIssues: document.validationIssues
+      const cleanExportData = {
+        document_info: {
+          internal_id: document.id,
+          source_filename: document.originalName,
+          processed_date: document.processedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+          confidence_score: Math.round((document.confidence || 0) * 100) / 100,
+          validation_status: document.validationIssues ? "requires_review" : "validated",
+          export_timestamp: new Date().toISOString()
+        },
+        bill_of_lading: {
+          bol_number: bolData?.bolNumber || "N/A",
+          ship_date: bolData?.shipDate || "N/A",
+          carrier_info: {
+            name: bolData?.carrier?.name || "N/A",
+            scac_code: bolData?.carrier?.scac || "N/A"
+          },
+          shipper: {
+            company_name: bolData?.shipper?.name || "N/A",
+            address: bolData?.shipper?.address || "N/A"
+          },
+          consignee: {
+            company_name: bolData?.consignee?.name || "N/A",
+            address: bolData?.consignee?.address || "N/A"
+          },
+          shipment_details: {
+            total_weight_lbs: bolData?.totalWeight || 0,
+            item_count: bolData?.items?.length || 0,
+            items: (bolData?.items || []).map((item: any, index: number) => ({
+              line_number: index + 1,
+              description: item.description || "N/A",
+              quantity: item.quantity || 0,
+              weight_lbs: item.weight || 0,
+              freight_class: item.class || "N/A"
+            }))
+          }
+        }
       };
 
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.json(exportData);
+      res.json(cleanExportData);
     } catch (error) {
       res.status(500).json({ message: "Failed to export document" });
     }
