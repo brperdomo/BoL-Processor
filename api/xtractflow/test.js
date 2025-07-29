@@ -15,14 +15,15 @@ export default async function handler(req, res) {
 
   try {
     // For Vercel demo, simulate connection test
-    const config = req.body;
+    const config = req.body || {};
 
-    // Simulate validation
-    if (!config.apiKey || !config.baseUrl) {
-      return res.status(400).json({
+    // For demo mode, be lenient with validation
+    if (!config.apiKey && !config.baseUrl) {
+      return res.status(200).json({
         success: false,
-        error: 'Missing required configuration fields',
-        details: 'API Key and Base URL are required'
+        error: 'Missing configuration data',
+        details: 'This is demo mode - configuration not required',
+        demo: true
       });
     }
 

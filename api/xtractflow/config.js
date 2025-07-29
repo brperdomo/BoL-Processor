@@ -21,13 +21,14 @@ export default async function handler(req, res) {
 
       case 'POST':
         // Handle config save for demo (doesn't actually save)
-        const config = req.body;
+        const config = req.body || {};
         
-        // Validate required fields
-        if (!config.apiKey || !config.baseUrl) {
+        // For demo mode, be lenient with validation
+        if (!config.apiKey && !config.baseUrl) {
           return res.status(400).json({
-            error: 'Missing required configuration fields',
-            required: ['apiKey', 'baseUrl']
+            error: 'Missing configuration data',
+            message: 'Please provide API configuration',
+            demo: true
           });
         }
 

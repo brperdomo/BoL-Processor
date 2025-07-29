@@ -1,0 +1,118 @@
+ Sending <NmLockState> message to native core <2932177734>
+background.js:80 📥 Received message <NmLockState> from native core <2932177734>. Duration: 1.6ms
+background.js:80 📤 Sending <NmLockState> message to native core <791953526>
+background.js:80 📥 Received message <NmLockState> from native core <791953526>. Duration: 2.8ms
+background.js:80 📤 Sending <NmLockState> message to native core <3173621012>
+background.js:80 📥 Received message <NmLockState> from native core <3173621012>. Duration: 2.9ms
+background.js:80 📤 Sending <NmLockState> message to native core <2311927966>
+background.js:80 📥 Received message <NmLockState> from native core <2311927966>. Duration: 1.3ms
+background.js:80 📤 Sending <NmLockState> message to native core <453692276>
+background.js:80 📥 Received message <NmLockState> from native core <453692276>. Duration: 2.1ms
+background.js:80 📤 Sending <NmLockState> message to native core <4284814688>
+background.js:80 📥 Received message <NmLockState> from native core <4284814688>. Duration: 1.6ms
+background.js:80 📤 Sending <NmLockState> message to native core <37179441>
+background.js:80 📥 Received message <NmLockState> from native core <37179441>. Duration: 1.9ms
+background.js:80 📤 Sending <NmLockState> message to native core <574553967>
+background.js:80 📥 Received message <NmLockState> from native core <574553967>. Duration: 1.7ms
+background.js:80 📤 Sending <NmLockState> message to native core <3555416097>
+background.js:80 📥 Received message <NmLockState> from native core <3555416097>. Duration: 1.4ms
+background.js:80 📤 Sending <NmLockState> message to native core <1115423023>
+background.js:80 📥 Received message <NmLockState> from native core <1115423023>. Duration: 2.1ms
+background.js:80 📤 Sending <NmLockState> message to native core <615615787>
+background.js:80 📥 Received message <NmLockState> from native core <615615787>. Duration: 1.8ms
+background.js:80 📤 Sending <NmLockState> message to native core <2598582308>
+background.js:80 📥 Received message <NmLockState> from native core <2598582308>. Duration: 4.3ms
+background.js:80 📤 Sending <NmLockState> message to native core <2635564197>
+background.js:80 📥 Received message <NmLockState> from native core <2635564197>. Duration: 1.7ms
+background.js:80 📤 Sending <NmLockState> message to native core <1416791567>
+background.js:80 📥 Received message <NmLockState> from native core <1416791567>. Duration: 1.2ms
+background.js:80 DeviceTrust: access denied: [ missing backoffice permission, missing admin permission ] - aborting
+(anonymous) @ background.js:80Understand this warning
+background.js:80 📤 Sending <NmLockState> message to native core <206987489>
+background.js:80 📥 Received message <NmLockState> from native core <206987489>. Duration: 0.9ms
+background.js:80 📤 Sending <NmLockState> message to native core <3088771803>
+background.js:80 📥 Received message <NmLockState> from native core <3088771803>. Duration: 1.6ms
+background.js:80 📤 Sending <NmLockState> message to native core <1888298057>
+background.js:80 📥 Received message <NmLockState> from native core <1888298057>. Duration: 1ms
+background.js:80 📤 Sending <NmLockState> message to native core <2191740532>
+background.js:80 📥 Received message <NmLockState> from native core <2191740532>. Duration: 3ms
+background.js:80 📤 Sending <NmLockState> message to native core <637902336>
+background.js:80 📥 Received message <NmLockState> from native core <637902336>. Duration: 1.3ms
+background.js:80 DeviceTrust: access denied: [ missing backoffice permission, missing admin permission ] - aborting
+(anonymous) @ background.js:80Understand this warning
+background.js:80 📤 Sending <NmLockState> message to native core <3938206622>
+background.js:80 📥 Received message <NmLockState> from native core <3938206622>. Duration: 1.9ms
+background.js:80 📤 Sending <NmLockState> message to native core <365089672>
+background.js:80 📥 Received message <NmLockState> from native core <365089672>. Duration: 1.3ms
+chunk-FLCULYKI.js:31 orchestration: Initializing config store with state Object
+chunk-FLCULYKI.js:31 orchestration: Initializing feature flag store with state Object
+chunk-FLCULYKI.js:31 orchestration: Initializing user store with state Object
+chunk-FLCULYKI.js:31 orchestration: Updating combined state Object
+background.js:80 DeviceTrust: access denied: [ missing backoffice permission, missing admin permission ] - aborting
+(anonymous) @ background.js:80Understand this warning
+bol-processor.vercel.app/:1 [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) <input type=​"password" class=​"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:​border-0 file:​bg-transparent file:​text-sm file:​font-medium file:​text-foreground placeholder:​text-muted-foreground focus-visible:​outline-none focus-visible:​ring-2 focus-visible:​ring-ring focus-visible:​ring-offset-2 disabled:​cursor-not-allowed disabled:​opacity-50 md:​text-sm pr-10" id=​"apiKey" placeholder=​"Your XTractFlow API key" value=​"IHj5EOuuDMQUPtj_rvgvggez5Bv2sSZoesOcNFWat7JYNjVT1MebFZgbJUiTvAn0qfZhzBWrdX5JrHfoVNeyWbU4H_0i0xIVlnz7sQCQ0QXRBktBR03YDADF7VALCnnByfaQ8ajiJSOKIJ6S34CjjDSAFH4TH-RkE3w4pIM9PM9iYocN1O5Xf4_bTwFDni27IUzrwtFX5meomt8vvXtTL59Thl_WzwgabGNyJEVceNesfNiW8rVr3EnvVdW5FgYFom5iZFdVyBUjXsQna6Ez9RFx1MT_yfCOSulIyz8tBrTEg5N6N1inty5qvZt2ee8BtRGN85uB2Lgusx0YXD8c7G4DwjLHPVsbu3OshZMFBA7fUBAPZPritWhYRxhqTx8BljcsUrMDKHESETe9CDnEy4b9zZPbgFDZtz_mC5p2LaxNWtXxsIejT7oL5KyCE4mnggOJe_nL1REp9FY0z-rSiuwWT86_p4MKEvskhuPTs-jAiPRG4l_hsuFY_iE9SkkzIF29z3tFuvjXeelI-olf-XYIAQgpdaFnh0sQgymGE-Oh0zcaxGWuOhS_d7gJRmgaPut4Jv0ub8qace24qlFm7oUfJbsXUC10Owchcqf2Wd7o1tlfj9-090-jazF7F5NKOZwTpvKb2UBQ_DO9GguCE30rGzcSZj1MSfUFvGRcFLI25rBftrIajTAaRwP-YSERlDTew7jws87rY9mDM9hEsqmeC02mrK_nQ9I4BI7Hw-g=">​flex
+background.js:80 📤 Sending <NmLockState> message to native core <1792316577>
+background.js:80 📥 Received message <NmLockState> from native core <1792316577>. Duration: 1.2ms
+/api/xtractflow/test:1  Failed to load resource: the server responded with a status of 400 ()Understand this error
+config:1  Failed to load resource: the server responded with a status of 400 ()Understand this error
+index-BlGU41nP.js:202  POST https://bol-processor.vercel.app/api/xtractflow/config 400 (Bad Request)
+v @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37Understand this error
+index-BlGU41nP.js:202 Fetch failed loading: POST "https://bol-processor.vercel.app/api/xtractflow/config".
+v @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37
+27Fetch finished loading: GET "<URL>".
+background.js:80 📤 Sending <NmLockState> message to native core <177254985>
+background.js:80 📥 Received message <NmLockState> from native core <177254985>. Duration: 1.3ms
+background.js:80 📤 Sending <NmLockState> message to native core <3238074088>
+background.js:80 📥 Received message <NmLockState> from native core <3238074088>. Duration: 0.9ms
+index-BlGU41nP.js:202 Fetch failed loading: POST "https://bol-processor.vercel.app/api/xtractflow/test".
+w @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37
+index-BlGU41nP.js:202  POST https://bol-processor.vercel.app/api/xtractflow/test 400 (Bad Request)
+w @ index-BlGU41nP.js:202
+c0 @ index-BlGU41nP.js:37
+d0 @ index-BlGU41nP.js:37
+p0 @ index-BlGU41nP.js:37
+Cp @ index-BlGU41nP.js:37
+Nh @ index-BlGU41nP.js:37
+(anonymous) @ index-BlGU41nP.js:37
+dd @ index-BlGU41nP.js:40
+Ym @ index-BlGU41nP.js:37
+Pl @ index-BlGU41nP.js:37
+zu @ index-BlGU41nP.js:37
+P0 @ index-BlGU41nP.js:37Understand this error
+background.js:80 📤 Sending <NmLockState> message to native core <2102267514>
+background.js:80 📥 Received message <NmLockState> from native core <2102267514>. Duration: 1.5ms
+background.js:80 📤 Sending <NmLockState> message to native core <3663832236>
+background.js:80 📥 Received message <NmLockState> from native core <3663832236>. Duration: 0.7ms
