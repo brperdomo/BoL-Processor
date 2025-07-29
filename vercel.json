@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd client && npx vite build --outDir ../public",
-  "outputDirectory": "public",
+  "buildCommand": "npx vite build --root client --outDir ../public",
+  "outputDirectory": "public", 
   "installCommand": "npm ci",
   "rewrites": [
     {
