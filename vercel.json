@@ -1,4 +1,7 @@
 {
+  "buildCommand": "npx vite build --outDir dist/public",
+  "outputDirectory": "dist/public",
+  "installCommand": "npm ci",
   "rewrites": [
     {
       "source": "/api/(.*)",

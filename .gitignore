@@ -87,5 +87,9 @@ dist/
 # Server config files (not deployment)
 xtractflow-config.json
 
-# Development-only services
+# Development-only services  
 dotnet-service/
+
+# Vercel deployment files
+vercel-build.sh
+package-frontend.json

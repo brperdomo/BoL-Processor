@@ -49,11 +49,11 @@ After deployment, you'll have:
 
 ## 🔧 **Common Issues & Fixes**
 
-### **Function Runtime Errors:**
-If you see "Function Runtimes must have a valid version":
-1. ✅ **Fixed**: Simplified `vercel.json` to use automatic detection
-2. ✅ **Fixed**: Removed complex function runtime configuration
-3. ✅ **Fixed**: Let Vercel auto-detect Node.js version from `.nvmrc`
+### **Build Conflicts (Server Code in Frontend):**
+If you see `__require` errors or "Dynamic require not supported":
+1. ✅ **Fixed**: Updated `vercel.json` with frontend-only build commands
+2. ✅ **Fixed**: Separated client build from server code completely
+3. ✅ **Fixed**: Added proper build configuration to avoid bundling conflicts
 4. Push the latest changes and redeploy
 
 ### **Other Build Errors:**
