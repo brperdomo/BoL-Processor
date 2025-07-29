@@ -8,15 +8,23 @@ interface ProcessingTabProps {
 }
 
 const ProcessingStages = [
-  { name: "File Upload Complete", completed: true },
-  { name: "Document Type Detection", completed: true },
-  { name: "Field Extraction", active: true },
-  { name: "Data Validation", completed: false },
+  { name: "File Upload Complete", stage: "upload_complete" },
+  { name: "Document Type Detection", stage: "type_detection" },
+  { name: "Field Extraction", stage: "field_extraction" },
+  { name: "Data Validation", stage: "data_validation" },
 ];
 
 function ProcessingCard({ document }: { document: Document }) {
-  const progressValue = Math.floor(Math.random() * 30) + 50; // Simulate progress 50-80%
-  const currentStage = Math.floor(Math.random() * 3) + 1;
+  // Use real processing data from document
+  const progressValue = document.processingProgress || 0;
+  const currentStageMap = {
+    "pending": 0,
+    "upload_complete": 1, 
+    "type_detection": 2,
+    "field_extraction": 3,
+    "data_validation": 4
+  };
+  const currentStage = currentStageMap[document.processingStage as keyof typeof currentStageMap] || 0;
 
   return (
     <Card className="bg-nutrient-card border border-slate-700 fade-in">

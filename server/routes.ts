@@ -24,6 +24,77 @@ const upload = multer({
 // Initialize XTractFlow service
 const xtractFlowService = createXTractFlowService();
 
+// Function to handle document processing with real-time progress updates
+async function processDocumentWithProgress(docId: number, file: Express.Multer.File) {
+  try {
+    // Stage 1: Type Detection (25%)
+    setTimeout(async () => {
+      await storage.updateDocument(docId, {
+        processingProgress: 25,
+        processingStage: 'type_detection'
+      });
+    }, 1000);
+    
+    // Stage 2: Field Extraction (60%)
+    setTimeout(async () => {
+      await storage.updateDocument(docId, {
+        processingProgress: 60,
+        processingStage: 'field_extraction'
+      });
+    }, 3000);
+    
+    // Stage 3: Data Validation (85%)
+    setTimeout(async () => {
+      await storage.updateDocument(docId, {
+        processingProgress: 85,
+        processingStage: 'data_validation'
+      });
+    }, 5000);
+    
+    // Final Processing
+    setTimeout(async () => {
+      try {
+        const result = await xtractFlowService.processDocument(
+          file.buffer, 
+          file.originalname, 
+          file.mimetype
+        );
+        
+        await storage.updateDocument(docId, {
+          status: result.status,
+          processedAt: new Date(),
+          confidence: result.confidence || null,
+          extractedData: result.extractedData || null,
+          validationIssues: result.validationIssues || null,
+          processingErrors: result.processingErrors || null,
+          processingProgress: 100,
+          processingStage: 'complete',
+        });
+      } catch (error) {
+        console.error('Document processing error:', error);
+        await storage.updateDocument(docId, {
+          status: 'unprocessed',
+          processedAt: new Date(),
+          confidence: null,
+          extractedData: null,
+          validationIssues: null,
+          processingErrors: [
+            {
+              code: 'PROCESSING_FAILED',
+              message: 'Document processing service error',
+              details: error instanceof Error ? error.message : 'Unknown error occurred'
+            }
+          ],
+          processingProgress: 0,
+          processingStage: 'error',
+        });
+      }
+    }, 7000); // Complete processing after 7 seconds
+  } catch (error) {
+    console.error('Progress tracking error:', error);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get XTractFlow configuration status
   app.get("/api/xtractflow/status", async (req, res) => {
@@ -135,45 +206,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           extractedData: null,
           validationIssues: null,
           processingErrors: null,
+          processingProgress: 10,
+          processingStage: 'upload_complete',
         });
 
         uploadedDocuments.push(document);
 
-        // Process document with XTractFlow (with simulated delay for demo purposes)
-        setTimeout(async () => {
-          try {
-            const result = await xtractFlowService.processDocument(
-              file.buffer, 
-              file.originalname, 
-              file.mimetype
-            );
-            
-            await storage.updateDocument(document.id, {
-              status: result.status,
-              processedAt: new Date(),
-              confidence: result.confidence || null,
-              extractedData: result.extractedData || null,
-              validationIssues: result.validationIssues || null,
-              processingErrors: result.processingErrors || null,
-            });
-          } catch (error) {
-            console.error('Document processing error:', error);
-            await storage.updateDocument(document.id, {
-              status: 'unprocessed',
-              processedAt: new Date(),
-              confidence: null,
-              extractedData: null,
-              validationIssues: null,
-              processingErrors: [
-                {
-                  code: 'PROCESSING_FAILED',
-                  message: 'Document processing service error',
-                  details: error instanceof Error ? error.message : 'Unknown error occurred'
-                }
-              ],
-            });
-          }
-        }, Math.random() * 5000 + 2000); // Random delay between 2-7 seconds
+        // Process document with XTractFlow and real-time progress tracking
+        processDocumentWithProgress(document.id, file);
       }
 
       res.json({ 

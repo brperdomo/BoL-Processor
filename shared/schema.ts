@@ -15,6 +15,8 @@ export const documents = pgTable("documents", {
   extractedData: jsonb("extracted_data"),
   validationIssues: jsonb("validation_issues"),
   processingErrors: jsonb("processing_errors"),
+  processingProgress: integer("processing_progress").default(0),
+  processingStage: text("processing_stage").default("pending"),
 });
 
 export const insertDocumentSchema = createInsertSchema(documents).omit({
