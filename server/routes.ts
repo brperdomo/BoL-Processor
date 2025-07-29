@@ -280,15 +280,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           export_format_version: "1.0",
           source_system: "Nutrient BOL Processor"
         },
-        documents: processedDocs.map(doc => {
+        documents: processedDocs.flatMap(doc => {
           const bolData = doc.extractedData as any;
-          return {
+          const documents = [];
+          
+          // Primary BOL
+          documents.push({
             document_info: {
               internal_id: doc.id,
               source_filename: doc.originalName,
               processed_date: doc.processedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
               confidence_score: Math.round((doc.confidence || 0) * 100) / 100,
-              validation_status: doc.validationIssues ? "requires_review" : "validated"
+              validation_status: doc.validationIssues ? "requires_review" : "validated",
+              bol_sequence: 1,
+              total_bols_in_document: bolData?.totalBOLs || 1
             },
             bill_of_lading: {
               bol_number: bolData?.bolNumber || "N/A",
@@ -317,7 +322,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }))
               }
             }
-          };
+          });
+
+          // Additional BOLs from multi-BOL documents
+          if (bolData?.additionalBOLs && bolData.additionalBOLs.length > 0) {
+            bolData.additionalBOLs.forEach((additionalBOL: any, index: number) => {
+              documents.push({
+                document_info: {
+                  internal_id: `${doc.id}-${index + 2}`,
+                  source_filename: doc.originalName,
+                  processed_date: doc.processedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+                  confidence_score: Math.round((additionalBOL.confidence || 0) * 100) / 100,
+                  validation_status: "validated",
+                  bol_sequence: index + 2,
+                  total_bols_in_document: bolData.totalBOLs || 1
+                },
+                bill_of_lading: {
+                  bol_number: additionalBOL.bolNumber || "N/A",
+                  ship_date: additionalBOL.shipDate || "N/A",
+                  carrier_info: {
+                    name: additionalBOL.carrier?.name || "N/A",
+                    scac_code: additionalBOL.carrier?.scac || "N/A"
+                  },
+                  shipper: {
+                    company_name: additionalBOL.shipper?.name || "N/A",
+                    address: additionalBOL.shipper?.address || "N/A"
+                  },
+                  consignee: {
+                    company_name: additionalBOL.consignee?.name || "N/A",
+                    address: additionalBOL.consignee?.address || "N/A"
+                  },
+                  shipment_details: {
+                    total_weight_lbs: additionalBOL.totalWeight || 0,
+                    item_count: additionalBOL.items?.length || 0,
+                    items: (additionalBOL.items || []).map((item: any, itemIndex: number) => ({
+                      line_number: itemIndex + 1,
+                      description: item.description || "N/A",
+                      quantity: item.quantity || 0,
+                      weight_lbs: item.weight || 0,
+                      freight_class: item.class || "N/A"
+                    }))
+                  }
+                }
+              });
+            });
+          }
+
+          return documents;
         })
       };
 

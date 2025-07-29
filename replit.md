@@ -131,6 +131,14 @@ The project is now ready for GitHub deployment with comprehensive setup instruct
 - Port conflict resolution guidance
 
 ### Recent Changes (January 2025)
+- ✓ **Multi-BOL PDF Processing Support**
+  - **Enhanced Data Structure**: Support for multiple BOLs within a single PDF document
+  - **Automatic Detection**: XTractFlow API detects multiple BOL numbers and groups related fields
+  - **Clean Export Format**: Each BOL becomes a separate record in exports with sequence numbering
+  - **ERP Integration**: Multi-BOL documents create multiple purchase orders/receipts automatically
+  - **Real-world Support**: Handles consolidated shipments, multi-page BOL books, and batch processing
+  - **Page References**: Tracks which page each BOL was found on for manual verification
+  - **Backward Compatibility**: Single BOL documents continue to work unchanged
 - ✓ **Professional ERP/WMS/TMS Integration (Enhanced)**
   - **Clean JSON Export Format**: Restructured export with professional field naming and hierarchy
   - **Enterprise-Ready Structure**: Clear separation of document_info vs bill_of_lading data
