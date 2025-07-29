@@ -45,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.post('/api/xtractflow/config', (req, res) => {
+  app.post('/api/xtractflow/config', async (req, res) => {
     const { apiUrl, apiKey } = req.body;
     
     if (!apiUrl || !apiKey) {
@@ -53,16 +53,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      xtractFlowService.updateConfig({ apiUrl, apiKey });
+      await xtractFlowService.updateConfig({ apiUrl, apiKey });
       res.json({ message: 'XTractFlow configuration updated successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Failed to update configuration' });
     }
   });
 
-  app.delete('/api/xtractflow/config', (req, res) => {
+  app.delete('/api/xtractflow/config', async (req, res) => {
     try {
-      xtractFlowService.clearConfig();
+      await xtractFlowService.clearConfig();
       res.json({ message: 'Configuration cleared successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Failed to clear configuration' });

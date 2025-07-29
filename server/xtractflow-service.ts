@@ -24,10 +24,32 @@ export class XTractFlowService {
 
   private loadConfig(): XTractFlowConfig | null {
     try {
-      const fs = require('fs');
-      if (fs.existsSync(this.configPath)) {
-        const configData = fs.readFileSync(this.configPath, 'utf8');
-        return JSON.parse(configData);
+      // In production, use environment variables instead of file system
+      if (process.env.NODE_ENV === 'production') {
+        const apiUrl = process.env.XTRACTFLOW_API_URL;
+        const apiKey = process.env.XTRACTFLOW_API_KEY;
+        
+        if (apiUrl && apiKey) {
+          return {
+            apiUrl,
+            apiKey,
+            useMockApi: false
+          };
+        }
+        return null;
+      }
+      
+      // In development, try to load from file
+      try {
+        // Use dynamic import but without await in constructor
+        const fs = require('fs');
+        if (fs.existsSync(this.configPath)) {
+          const configData = fs.readFileSync(this.configPath, 'utf8');
+          return JSON.parse(configData);
+        }
+      } catch (fsError) {
+        // Fallback if file system not available
+        console.log('File system not available, using environment variables');
       }
     } catch (error) {
       console.log('Could not load saved XTractFlow config:', error);
@@ -35,10 +57,21 @@ export class XTractFlowService {
     return null;
   }
 
-  private saveConfig(): void {
+  private async saveConfig(): Promise<void> {
     try {
-      const fs = require('fs');
-      fs.writeFileSync(this.configPath, JSON.stringify(this.config, null, 2));
+      // In production, don't save to file system - configs come from environment
+      if (process.env.NODE_ENV === 'production') {
+        console.log('Production mode: Configuration managed via environment variables');
+        return;
+      }
+      
+      // In development, save to file
+      try {
+        const fs = await import('fs');
+        fs.writeFileSync(this.configPath, JSON.stringify(this.config, null, 2));
+      } catch (fsError) {
+        console.log('File system not available for config saving');
+      }
     } catch (error) {
       console.error('Could not save XTractFlow config:', error);
     }
@@ -832,7 +865,7 @@ export class XTractFlowService {
     }
   }
 
-  updateConfig(newConfig: { apiUrl?: string; apiKey?: string }) {
+  async updateConfig(newConfig: { apiUrl?: string; apiKey?: string }) {
     console.log('Updating config with:', newConfig);
     this.config = { 
       ...this.config, 
@@ -841,7 +874,7 @@ export class XTractFlowService {
       useMockApi: !(newConfig.apiUrl && newConfig.apiKey)
     };
     console.log('New config state:', this.config);
-    this.saveConfig();
+    await this.saveConfig();
   }
 
 
@@ -850,13 +883,13 @@ export class XTractFlowService {
     return this.config;
   }
 
-  clearConfig() {
+  async clearConfig() {
     this.config = {
       apiUrl: '',
       apiKey: '',
       useMockApi: true
     };
-    this.saveConfig();
+    await this.saveConfig();
   }
 
   async testConnection(apiUrl: string, apiKey: string): Promise<{ success: boolean; message: string }> {
