@@ -7,23 +7,22 @@ yarn-error.log*
 # Build outputs
 dist/
 build/
+.next/
+out/
 
-# Environment variables
+# Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
 # OS generated files
 .DS_Store
@@ -34,33 +33,22 @@ coverage/
 ehthumbs.db
 Thumbs.db
 
-# Editor directories and files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
 # Logs
-logs
 *.log
+logs/
 
-# Temporary folders
-tmp/
-temp/
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
 
-# Database files (if using SQLite in the future)
-*.db
-*.sqlite
-*.sqlite3
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
 
-# Package manager lock files (keep package-lock.json for consistency)
-# yarn.lock
-
-# TypeScript cache
-*.tsbuildinfo
+# Dependency directories
+jspm_packages/
 
 # Optional npm cache directory
 .npm
@@ -76,32 +64,18 @@ temp/
 
 # dotenv environment variables file
 .env
-.env.test
 
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
+# Replit specific
+.replit
+.upm/
 
-# next.js build output
-.next
+# Database
+*.db
+*.sqlite
 
-# nuxt.js build output
-.nuxt
+# Temporary files
+tmp/
+temp/
 
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
+# Vercel
+.vercel
