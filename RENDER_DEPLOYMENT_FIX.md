@@ -31,15 +31,16 @@ XTRACTFLOW_API_KEY=<your-api-key>
 ```
 
 ### Render Build Settings:
-- **Build Command**: `npm install && npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist`
+- **Build Command**: `NODE_ENV=development npm ci && npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist`
 - **Start Command**: `npm run start`
 - **Node Version**: 20+ (fixed .nvmrc from 18 → 20)
 
 ### Build Command Fix:
-- ✅ Updated build command to use npx instead of package.json scripts
+- ✅ Set NODE_ENV=development during npm install to include devDependencies
+- ✅ Uses npm ci for clean, reproducible installs from lockfile
 - ✅ npx automatically finds tools in devDependencies during build
-- ✅ Removed dependency on package.json scripts for build process
-- ✅ Direct command execution ensures build tools are found
+- ✅ Vite config can properly import vite during build process
+- ✅ Runtime remains in production mode via start command
 
 ## **Expected Behavior on Render**
 1. ✅ Builds successfully without ESM errors

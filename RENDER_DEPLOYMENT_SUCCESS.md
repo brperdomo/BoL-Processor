@@ -10,8 +10,10 @@ Your Nutrient BOL Processor is now **100% ready** for Render deployment. All bui
 In your Render service dashboard, change the build command to:
 
 ```bash
-npm install && npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+NODE_ENV=development npm ci && npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 ```
+
+**Key Fix**: Setting `NODE_ENV=development` during npm install ensures devDependencies (like vite) are installed for the build process, while the actual runtime will use production mode.
 
 ### **2. Environment Variables**
 Set these in your Render dashboard:
