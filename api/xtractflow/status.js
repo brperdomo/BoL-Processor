@@ -1,10 +1,13 @@
 // Vercel serverless function for XTractFlow status
-// Simple configuration state (in production would be database)
-let configurationState = {
-  configured: false,
-  apiKey: null,
-  baseUrl: null
-};
+// Global configuration state shared across serverless functions
+if (!global.xtractflowConfig) {
+  global.xtractflowConfig = {
+    configured: false,
+    apiKey: null,
+    baseUrl: null
+  };
+}
+const configurationState = global.xtractflowConfig;
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -33,5 +36,3 @@ export default async function handler(req, res) {
   });
 }
 
-// Export configuration state for other functions
-export { configurationState };
