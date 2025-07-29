@@ -5,12 +5,13 @@
 Your Nutrient BOL Processor is now fully configured for Vercel deployment with the following setup:
 
 ### **Files Added/Modified:**
-- ✅ `vercel.json` - Vercel deployment configuration
+- ✅ `vercel.json` - Fixed runtime version for serverless functions
 - ✅ `api/documents.js` - Serverless function for document management
 - ✅ `api/upload.js` - Serverless function for file uploads  
 - ✅ `api/xtractflow/status.js` - XTractFlow status endpoint (demo mode)
 - ✅ `.gitignore` - Proper Git exclusions
 - ✅ `VERCEL_DEPLOYMENT.md` - Complete deployment guide
+- ✅ `VERCEL_QUICK_FIX.md` - Troubleshooting guide for common issues
 - ✅ Updated `replit.md` with Vercel deployment notes
 
 ### **Deployment Steps:**
