@@ -1,36 +1,42 @@
 // Vercel serverless function for document management
 import { nanoid } from 'nanoid';
 
-// Simple in-memory storage for Vercel demo
+// Simple in-memory storage for Vercel demo (shared with upload.js)
+let documentsStore = [];
+
 class MemStorage {
   constructor() {
-    this.documents = new Map();
+    // Use shared store instead of Map for cross-function compatibility
   }
 
   async create(document) {
-    this.documents.set(document.id, document);
+    documentsStore.push(document);
     return document;
   }
 
   async getAll() {
-    return Array.from(this.documents.values());
+    return [...documentsStore];
   }
 
   async getById(id) {
-    return this.documents.get(id);
+    return documentsStore.find(doc => doc.id === id);
   }
 
   async update(id, updates) {
-    const existing = this.documents.get(id);
-    if (!existing) throw new Error('Document not found');
+    const index = documentsStore.findIndex(doc => doc.id === id);
+    if (index === -1) throw new Error('Document not found');
     
-    const updated = { ...existing, ...updates };
-    this.documents.set(id, updated);
+    const updated = { ...documentsStore[index], ...updates };
+    documentsStore[index] = updated;
     return updated;
   }
 
   async delete(id) {
-    return this.documents.delete(id);
+    const index = documentsStore.findIndex(doc => doc.id === id);
+    if (index === -1) return false;
+    
+    documentsStore.splice(index, 1);
+    return true;
   }
 }
 
