@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot, User, FileText, Zap, Database } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, FileText, Zap, Database, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -165,6 +165,17 @@ export default function Chatbot({ className = "" }: ChatbotProps) {
     }
   };
 
+  const startNewConversation = () => {
+    setMessages([
+      {
+        id: "welcome",
+        text: "Hi! I'm here to help you with the Nutrient BOL Processor. Ask me about app features, supported formats, XTractFlow integration, or anything else!",
+        isBot: true,
+        timestamp: new Date()
+      }
+    ]);
+  };
+
   return (
     <div className={`fixed bottom-4 right-4 z-50 ${className}`}>
       {!isOpen && (
@@ -184,14 +195,25 @@ export default function Chatbot({ className = "" }: ChatbotProps) {
                 <Bot className="h-5 w-5" />
                 <CardTitle className="text-lg">BOL Assistant</CardTitle>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-                className="text-white hover:bg-white hover:bg-opacity-20 p-1"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center space-x-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={startNewConversation}
+                  className="text-white hover:bg-white hover:bg-opacity-20 p-1"
+                  title="Start new conversation"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsOpen(false)}
+                  className="text-white hover:bg-white hover:bg-opacity-20 p-1"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
 
@@ -259,6 +281,19 @@ export default function Chatbot({ className = "" }: ChatbotProps) {
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
+              {messages.length > 2 && (
+                <div className="mt-2 text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={startNewConversation}
+                    className="text-nutrient-text-secondary hover:text-nutrient-text text-xs"
+                  >
+                    <RotateCcw className="h-3 w-3 mr-1" />
+                    Ask another question
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
