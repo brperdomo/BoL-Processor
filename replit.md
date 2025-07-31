@@ -140,6 +140,14 @@ The project is now ready for GitHub deployment with comprehensive setup instruct
   - **Header Branding**: Added "Powered by Nutrient AI Document Processing SDK (formerly XtractFlow)" to main header
   - **Public Terminology**: All user-facing content uses "AI Document Processing" branding
   - **Technical References**: Internal code maintains XTractFlow references for consistency
+- ✓ **JSON Export Formatting (Complete)**
+  - **Readable Format**: Fixed JSON exports to use proper indentation (2 spaces) instead of single-line output
+  - **Both Endpoints**: Updated bulk export and individual document export for better readability
+- ✓ **Realistic Processing Progress (Complete)**
+  - **Dynamic Progress**: Replaced fixed percentages (10, 25, 60, 85) with realistic, file-size-based progress animation
+  - **Smooth Animation**: Progress updates every ~200ms with slight randomness for natural feel
+  - **No More Stuck**: Eliminated the "stuck at 85%" issue with proper completion flow
+  - **File-Aware Timing**: Processing time varies based on actual file size (2-8 seconds)
 - ✓ **Chatbot Integration (Complete)**
   - **FAQ Chatbot**: Added comprehensive FAQ chatbot with predefined responses about app functionality
   - **AI Document Processing**: Updated terminology from XTractFlow to "AI Document Processing" for public-facing content

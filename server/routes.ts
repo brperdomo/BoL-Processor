@@ -24,72 +24,83 @@ const upload = multer({
 // Initialize XTractFlow service
 const xtractFlowService = createXTractFlowService();
 
-// Function to handle document processing with real-time progress updates
+// Function to handle document processing with realistic progress updates
 async function processDocumentWithProgress(docId: number, file: Express.Multer.File) {
   try {
-    // Stage 1: Type Detection (25%)
-    setTimeout(async () => {
-      await storage.updateDocument(docId, {
-        processingProgress: 25,
-        processingStage: 'type_detection'
-      });
-    }, 1000);
+    let currentProgress = 15; // Start with 15% (upload complete)
     
-    // Stage 2: Field Extraction (60%)
-    setTimeout(async () => {
-      await storage.updateDocument(docId, {
-        processingProgress: 60,
-        processingStage: 'field_extraction'
-      });
-    }, 3000);
+    // Generate realistic progress increments based on file size
+    const fileSizeKB = file.size / 1024;
+    const baseProcessingTime = Math.min(Math.max(fileSizeKB / 100, 2), 8); // 2-8 seconds based on file size
+    const progressSteps = [
+      { stage: 'type_detection', targetProgress: 35, minTime: 800, maxTime: 1500 },
+      { stage: 'field_extraction', targetProgress: 72, minTime: 1500, maxTime: 2800 },
+      { stage: 'data_validation', targetProgress: 94, minTime: 1200, maxTime: 2200 }
+    ];
     
-    // Stage 3: Data Validation (85%)
-    setTimeout(async () => {
-      await storage.updateDocument(docId, {
-        processingProgress: 85,
-        processingStage: 'data_validation'
-      });
-    }, 5000);
-    
-    // Final Processing
-    setTimeout(async () => {
-      try {
-        const result = await xtractFlowService.processDocument(
-          file.buffer, 
-          file.originalname, 
-          file.mimetype
-        );
+    // Create realistic progress animation
+    const animateProgress = async (targetProgress: number, duration: number, stage: string) => {
+      const steps = Math.max(5, Math.floor(duration / 200)); // Update every ~200ms
+      const progressPerStep = (targetProgress - currentProgress) / steps;
+      const timePerStep = duration / steps;
+      
+      for (let i = 0; i < steps; i++) {
+        await new Promise(resolve => setTimeout(resolve, timePerStep + Math.random() * 100 - 50)); // Add slight randomness
+        currentProgress = Math.min(targetProgress, currentProgress + progressPerStep + Math.random() * 2 - 1);
         
         await storage.updateDocument(docId, {
-          status: result.status,
-          processedAt: new Date(),
-          confidence: result.confidence || null,
-          extractedData: result.extractedData || null,
-          validationIssues: result.validationIssues || null,
-          processingErrors: result.processingErrors || null,
-          processingProgress: 100,
-          processingStage: 'complete',
-        });
-      } catch (error) {
-        console.error('Document processing error:', error);
-        await storage.updateDocument(docId, {
-          status: 'unprocessed',
-          processedAt: new Date(),
-          confidence: null,
-          extractedData: null,
-          validationIssues: null,
-          processingErrors: [
-            {
-              code: 'PROCESSING_FAILED',
-              message: 'Document processing service error',
-              details: error instanceof Error ? error.message : 'Unknown error occurred'
-            }
-          ],
-          processingProgress: 0,
-          processingStage: 'error',
+          processingProgress: Math.round(currentProgress),
+          processingStage: stage
         });
       }
-    }, 7000); // Complete processing after 7 seconds
+    };
+    
+    // Execute processing stages with realistic timing
+    for (const step of progressSteps) {
+      const duration = step.minTime + Math.random() * (step.maxTime - step.minTime);
+      await animateProgress(step.targetProgress, duration, step.stage);
+    }
+    
+    // Final processing - call actual XTractFlow service
+    try {
+      const result = await xtractFlowService.processDocument(
+        file.buffer, 
+        file.originalname, 
+        file.mimetype
+      );
+      
+      // Complete to 100% quickly
+      await animateProgress(100, 300, 'complete');
+      
+      await storage.updateDocument(docId, {
+        status: result.status,
+        processedAt: new Date(),
+        confidence: result.confidence || null,
+        extractedData: result.extractedData || null,
+        validationIssues: result.validationIssues || null,
+        processingErrors: result.processingErrors || null,
+        processingProgress: 100,
+        processingStage: 'complete',
+      });
+    } catch (error) {
+      console.error('Document processing error:', error);
+      await storage.updateDocument(docId, {
+        status: 'unprocessed',
+        processedAt: new Date(),
+        confidence: null,
+        extractedData: null,
+        validationIssues: null,
+        processingErrors: [
+          {
+            code: 'PROCESSING_FAILED',
+            message: 'Document processing service error',
+            details: error instanceof Error ? error.message : 'Unknown error occurred'
+          }
+        ],
+        processingProgress: 0,
+        processingStage: 'error',
+      });
+    }
   } catch (error) {
     console.error('Progress tracking error:', error);
   }
