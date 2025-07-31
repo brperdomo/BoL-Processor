@@ -130,7 +130,19 @@ The project is now ready for GitHub deployment with comprehensive setup instruct
 - Production build instructions
 - Port conflict resolution guidance
 
-### Recent Changes (January 2025)
+### Recent Changes (July 2025)
+- ✓ **Chatbot Integration (Complete)**
+  - **FAQ Chatbot**: Added comprehensive FAQ chatbot with predefined responses about app functionality
+  - **AI Document Processing**: Updated terminology from XTractFlow to "AI Document Processing" for public-facing content
+  - **Interactive Interface**: Floating chat button with conversation reset options and suggested questions
+  - **Knowledge Base**: Covers supported formats, multi-BOL processing, export options, data accuracy, and troubleshooting
+  - **User Experience**: Easy navigation with "Ask another question" and "Start new conversation" buttons
+- ✓ **Multi-BOL Display Enhancement (Complete)**
+  - **Summary Information**: Modified Key Information section to show document type, total BOLs, file size, and combined weight
+  - **Comprehensive Overview**: Summary section displays BOL numbers, carriers involved, and total items across all BOLs
+  - **Clear Identification**: Multi-BOL documents clearly labeled with exact count and file size in header
+
+### Previous Changes (January 2025)
 - ✓ **Multi-BOL PDF Processing Support**
   - **Enhanced Data Structure**: Support for multiple BOLs within a single PDF document
   - **Automatic Detection**: XTractFlow API detects multiple BOL numbers and groups related fields

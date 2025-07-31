@@ -20,7 +20,7 @@ const FAQ_RESPONSES = {
   // App functionality
   "what does this app do": "This is the Nutrient BOL Processor - an AI-powered document processing application that extracts structured data from Bill of Lading (BOL) documents. It automatically classifies documents, extracts key shipment information like carrier details, shipper/consignee addresses, item descriptions, and weights.",
   
-  "how does it work": "Simply drag and drop your BOL documents (PDF format) into the upload zone. The app uses Nutrient's XTractFlow AI to automatically process the documents, extract key data fields, and organize them into different tabs based on their processing status.",
+  "how does it work": "Simply drag and drop your BOL documents (PDF format) into the upload zone. The app uses Nutrient's AI Document Processing to automatically process the documents, extract key data fields, and organize them into different tabs based on their processing status.",
   
   "what can i do": "You can upload BOL documents, track processing progress, review extracted data, validate questionable results, retry failed documents, and export processed data in multiple formats (JSON, CSV, Excel, XML) for integration with your ERP/WMS/TMS systems.",
 
@@ -31,14 +31,16 @@ const FAQ_RESPONSES = {
   
   "export formats": "You can export processed data in four formats: JSON (structured data), CSV (spreadsheet-compatible), Excel (.xlsx files), and XML (for system integration). All exports include extracted BOL data, issuer information, and confidence scores.",
 
-  // XTractFlow integration
-  "what is xtractflow": "XTractFlow is Nutrient's advanced AI document processing engine that uses machine learning and natural language processing to extract structured data from documents. It's specifically trained to understand Bill of Lading formats and can identify key fields with high accuracy.",
+  // AI Document Processing integration
+  "what is xtractflow": "AI Document Processing is Nutrient's advanced document processing engine that uses machine learning and natural language processing to extract structured data from documents. It's specifically trained to understand Bill of Lading formats and can identify key fields with high accuracy.",
   
-  "how accurate": "XTractFlow provides confidence scores for each extraction, typically achieving 85-95% accuracy on well-formatted BOL documents. Documents with lower confidence scores are flagged for manual validation to ensure data quality.",
+  "what is ai document processing": "AI Document Processing is Nutrient's advanced document processing engine that uses machine learning and natural language processing to extract structured data from documents. It's specifically trained to understand Bill of Lading formats and can identify key fields with high accuracy.",
   
-  "xtractflow": "XTractFlow integration allows this app to process BOL documents with enterprise-grade accuracy. It uses OpenAI's language models combined with Nutrient's document understanding to extract carrier information, shipment details, item descriptions, weights, and addresses automatically.",
+  "how accurate": "AI Document Processing provides confidence scores for each extraction, typically achieving 85-95% accuracy on well-formatted BOL documents. Documents with lower confidence scores are flagged for manual validation to ensure data quality.",
   
-  "ai processing": "The AI processing happens through XTractFlow, which analyzes document structure, identifies BOL-specific fields, and extracts data using advanced OCR and natural language understanding. The system can handle various BOL formats and layouts automatically.",
+  "xtractflow": "AI Document Processing integration allows this app to process BOL documents with enterprise-grade accuracy. It uses OpenAI's language models combined with Nutrient's document understanding to extract carrier information, shipment details, item descriptions, weights, and addresses automatically.",
+  
+  "ai processing": "The AI processing happens through Nutrient's AI Document Processing, which analyzes document structure, identifies BOL-specific fields, and extracts data using advanced OCR and natural language understanding. The system can handle various BOL formats and layouts automatically.",
 
   // Multi-BOL features
   "multi bol": "The app can process PDF files containing multiple Bill of Lading documents. It automatically detects how many BOLs are in each file, extracts data from each one separately, and provides summary information showing total BOLs, combined weights, and all BOL numbers.",
@@ -53,7 +55,7 @@ const FAQ_RESPONSES = {
   "bol issuer": "The app automatically extracts BOL issuer information from document titles in the format '[Company Name] - Bill of Lading'. This issuer data is included in all export formats to help identify the source organization of each BOL.",
 
   // Troubleshooting
-  "not working": "If processing isn't working, check that: 1) Your file is a PDF containing BOL information, 2) The XTractFlow service is connected (check the status indicator in the header), 3) Try uploading a different BOL document to test. You can also retry failed documents from the Unprocessed tab.",
+  "not working": "If processing isn't working, check that: 1) Your file is a PDF containing BOL information, 2) The AI Document Processing service is connected (check the status indicator in the header), 3) Try uploading a different BOL document to test. You can also retry failed documents from the Unprocessed tab.",
   
   "failed processing": "Documents can fail processing if they're not recognized as BOLs, have poor image quality, or contain unsupported formats. Failed documents appear in the Unprocessed tab where you can retry processing or delete them.",
   
@@ -63,7 +65,7 @@ const FAQ_RESPONSES = {
 const SUGGESTED_QUESTIONS = [
   "What does this app do?",
   "What file formats are supported?",
-  "How does XTractFlow work?",
+  "How does AI Document Processing work?",
   "Can it handle multiple BOLs?",
   "What export formats are available?",
   "How accurate is the AI processing?"
@@ -74,7 +76,7 @@ export default function Chatbot({ className = "" }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      text: "Hi! I'm here to help you with the Nutrient BOL Processor. Ask me about app features, supported formats, XTractFlow integration, or anything else!",
+      text: "Hi! I'm here to help you with the Nutrient BOL Processor. Ask me about app features, supported formats, AI Document Processing integration, or anything else!",
       isBot: true,
       timestamp: new Date()
     }
@@ -169,7 +171,7 @@ export default function Chatbot({ className = "" }: ChatbotProps) {
     setMessages([
       {
         id: "welcome",
-        text: "Hi! I'm here to help you with the Nutrient BOL Processor. Ask me about app features, supported formats, XTractFlow integration, or anything else!",
+        text: "Hi! I'm here to help you with the Nutrient BOL Processor. Ask me about app features, supported formats, AI Document Processing integration, or anything else!",
         isBot: true,
         timestamp: new Date()
       }
