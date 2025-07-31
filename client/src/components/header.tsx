@@ -65,7 +65,7 @@ export default function Header() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-nutrient-text">Nutrient BOL Processor</h1>
-                <p className="text-sm text-nutrient-text-secondary">AI Document Processing</p>
+                <p className="text-sm text-nutrient-text-secondary">Powered by Nutrient AI Document Processing SDK (formerly XtractFlow)</p>
               </div>
             </div>
           </div>
