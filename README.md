@@ -488,4 +488,4 @@ For issues and questions:
 
 ---
 
-**Made with ❤️ for Nutrient Document Processing**
+**Powered by Nutrient AI Document Processing fka XTractFlow**
