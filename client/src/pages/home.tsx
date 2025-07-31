@@ -15,7 +15,12 @@ export default function Home() {
 
   const { data: documents = [] } = useQuery<Document[]>({
     queryKey: ["/api/documents"],
-    refetchInterval: 2000, // Refetch every 2 seconds to show processing updates
+    refetchInterval: (query) => {
+      // Only poll if there are documents currently being processed
+      const data = query.state.data as Document[] | undefined;
+      const hasProcessingDocs = data?.some(doc => doc.status === "processing") ?? false;
+      return hasProcessingDocs ? 2000 : false; // Poll every 2 seconds only when processing, otherwise stop
+    },
   });
 
   const processingDocs = documents.filter(doc => doc.status === "processing");

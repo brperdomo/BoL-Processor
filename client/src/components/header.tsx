@@ -12,7 +12,7 @@ interface XTractFlowStatus {
 function XTractFlowStatusIndicator() {
   const { data: status } = useQuery<XTractFlowStatus>({
     queryKey: ['/api/xtractflow/status'],
-    refetchInterval: 10000, // Check every 10 seconds
+    refetchInterval: 30000, // Check every 30 seconds (less frequent since status rarely changes)
   });
 
   if (!status) return null;
@@ -47,7 +47,7 @@ export default function Header() {
   const queryClient = useQueryClient();
   const { data: apiStatus } = useQuery<XTractFlowStatus>({
     queryKey: ['/api/xtractflow/status'],
-    refetchInterval: 10000,
+    refetchInterval: 30000,
   });
 
   const handleConfigUpdate = () => {

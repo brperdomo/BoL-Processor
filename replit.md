@@ -148,6 +148,11 @@ The project is now ready for GitHub deployment with comprehensive setup instruct
   - **Smooth Animation**: Progress updates every ~200ms with slight randomness for natural feel
   - **No More Stuck**: Eliminated the "stuck at 85%" issue with proper completion flow
   - **File-Aware Timing**: Processing time varies based on actual file size (2-8 seconds)
+- ✓ **Smart API Polling (Complete)**
+  - **Conditional Polling**: Documents API only polls every 2 seconds when documents are actively processing
+  - **Stops When Idle**: Polling automatically stops when no documents are being processed
+  - **Reduced XTractFlow Checks**: Status polling reduced from 10s to 30s since status rarely changes
+  - **Performance Fix**: Eliminated infinite API fetches that were causing performance issues
 - ✓ **Chatbot Integration (Complete)**
   - **FAQ Chatbot**: Added comprehensive FAQ chatbot with predefined responses about app functionality
   - **AI Document Processing**: Updated terminology from XTractFlow to "AI Document Processing" for public-facing content
