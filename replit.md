@@ -131,6 +131,15 @@ The project is now ready for GitHub deployment with comprehensive setup instruct
 - Port conflict resolution guidance
 
 ### Recent Changes (July 2025)
+- ✓ **App Overview & User Education (Complete)**
+  - **Welcome Section**: Added comprehensive overview above upload area explaining BOLs and app functionality
+  - **Process Visualization**: 4-step workflow diagram showing Upload → Process → Review → Export flow
+  - **Data Fields Guide**: Clear listing of all extracted data fields organized by category
+  - **User Onboarding**: Educational content for users unfamiliar with BOLs or document processing
+- ✓ **Visible Branding Integration (Complete)**
+  - **Header Branding**: Added "Powered by Nutrient AI Document Processing SDK (formerly XtractFlow)" to main header
+  - **Public Terminology**: All user-facing content uses "AI Document Processing" branding
+  - **Technical References**: Internal code maintains XTractFlow references for consistency
 - ✓ **Chatbot Integration (Complete)**
   - **FAQ Chatbot**: Added comprehensive FAQ chatbot with predefined responses about app functionality
   - **AI Document Processing**: Updated terminology from XTractFlow to "AI Document Processing" for public-facing content
