@@ -376,7 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', `attachment; filename="bol_export_${new Date().toISOString().split('T')[0]}.json"`);
-      res.json(cleanExportData);
+      res.send(JSON.stringify(cleanExportData, null, 2));
     } catch (error) {
       res.status(500).json({ message: "Failed to export documents" });
     }
@@ -680,7 +680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.json(cleanExportData);
+      res.send(JSON.stringify(cleanExportData, null, 2));
     } catch (error) {
       res.status(500).json({ message: "Failed to export document" });
     }
